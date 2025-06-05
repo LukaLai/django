@@ -1,0 +1,413 @@
+{% extends 'blog/base.html' %}
+{% load i18n %}
+{% load date_tags %}
+{% load date_tags %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+    
+{% block title %}{% trans "Articles" %} - {% trans "Mon Blog Django" %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">{% trans "Tous les Articles" %}</h1>
+        <p class="page-description">{% trans "Découvrez tous nos articles organisés par catégories" %}</p>
+    </div>
+
+    <div class="filters">
+        <h3>{% trans "Filtrer par catégorie" %}</h3>
+        <form method="get" class="filters-form" id="filters-form">
+            <a href="{% url 'articles' %}" class="filter-badge filter-badge-all{% if not selected_categories %} filter-badge-selected{% endif %}" style="--cat-color: #007cba;">{% trans "Toutes" %}</a>
+            <div class="filters-badges">
+            {% for categorie in categories %}
+                <label class="filter-badge-label">
+                    <input type="checkbox" name="categories" value="{{ categorie.id }}" 
+                           {% if selected_categories and categorie.id|stringformat:"s" in selected_categories %}checked{% endif %}>
+                    <span class="filter-badge" style="--cat-color: {{ categorie.couleur|default:'#007cba' }};{% if selected_categories and categorie.id|stringformat:'s' in selected_categories %} background: {{ categorie.couleur|default:'#007cba' }}; color: #fff; border: 2px solid {{ categorie.couleur|default:'#007cba' }};{% endif %}">
+                        {% if categorie.icone %}{{ categorie.icone }}{% endif %} {{ categorie.nom }}
+                    </span>
+                </label>
+            {% endfor %}
+            </div>
+            
+        </form>
+    </div>
+
+    <div class="articles-grid">
+        {% if articles %}
+            {% for article in articles %}
+                <a href="{% url 'article_detail' article.id %}" class="article-card-link">
+                    <div class="article-card">
+                        {% if article.image_base64 %}
+                            <div class="article-image-modern">
+                                <img src="data:image/jpeg;base64,{{ article.image_base64 }}" alt="{{ article.titre }}">
+                            </div>
+                        {% endif %}
+                        <div class="article-content-modern">
+                            <h2 class="article-title">{{ article.titre }}</h2>
+                            {% if article.categories.all %}
+                                <div class="article-categories" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+                                    {% for categorie in article.categories.all %}
+                                        <span class="filter-badge" style="--cat-color: {{ categorie.couleur|default:'#007cba' }}; background: {{ categorie.couleur|default:'#007cba' }}; color: #fff; border: 2px solid {{ categorie.couleur|default:'#007cba' }}; font-size: 0.98em; font-weight: 600;">
+                                            {% if categorie.icone %}{{ categorie.icone }}{% endif %} {{ categorie.nom }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="article-excerpt">
+                                {{ article.contenu|truncatewords:30|linebreaks }}
+                            </div>
+                            {% if user.is_authenticated %}
+                                <div class="article-actions-modern">
+                                    <span class="btn-modern btn-edit" onclick="event.preventDefault(); event.stopPropagation(); window.location.href='{% url 'modifier_article' article.id %}';">{% trans "Modifier" %}</span>
+                                    <span class="btn-modern btn-comment" onclick="event.preventDefault(); event.stopPropagation(); window.location.href='{% url 'ajouter_commentaire' article.id %}';">
+                                        {% trans "Commenter" %} ({{ article.commentaires.count }})
+                                    </span>
+                                </div>
+                            {% endif %}
+                            <div class="article-meta" style="margin-top: 18px; text-align: right; color: #6c757d; font-size: 0.95em;">
+                                {% trans "Publié par" %} <strong>{{ article.auteur }}</strong> {% trans "le" %} {% date_with_tooltip article.date_creation css_class="card-date" %}
+                                <span style="margin-left: 15px;">{{ article.temps_lecture_texte }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <div class="no-articles">
+                <h3>{% trans "Aucun article trouvé" %}</h3>
+                <p>{% trans "Il n'y a pas encore d'articles publiés." %}</p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'ajouter_article' %}" class="btn btn-primary">{% trans "Ajouter un Article" %}</a>
+                {% endif %}
+            </div>        {% endif %}
+    </div>
+</div>
+
+<style>
+.container {
+    max-width: 1450px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    color: white;
+}
+
+.page-title {
+    font-size: 3em;
+    font-weight: 700;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.page-description {
+    font-size: 1.2em;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.filters {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filters-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+.filters-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+.filter-badge-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+.filter-badge-label input[type="checkbox"] {
+    display: none;
+}
+.filter-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    color: var(--cat-color, #007cba);
+    font-size: 1em;
+    font-weight: 600;
+    background: transparent;
+    border: 2px solid var(--cat-color, #007cba);
+    box-shadow: none;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
+    cursor: pointer;
+}
+.filter-badge-all {
+    color: #007cba;
+    background: transparent;
+    border: 2px solid #007cba;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.filter-badge-all:hover, .filter-badge-all:focus {
+    background: #007cba;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,124,186,0.13);
+    transform: translateY(-2px) scale(1.04);
+    border: 2px solid #007cba;
+    text-decoration: none;
+}
+.filter-badge-selected {
+    background: #007cba !important;
+    color: #fff !important;
+    border: 2px solid #007cba !important;
+    box-shadow: 0 4px 12px rgba(0,124,186,0.13);
+    transform: translateY(-2px) scale(1.04);
+}
+.filter-badge-label:hover .filter-badge,
+.filter-badge-label input[type="checkbox"]:focus + .filter-badge {
+    background: var(--cat-color, #007cba);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.13);
+    transform: translateY(-2px) scale(1.04);
+    border: 2px solid var(--cat-color, #007cba);
+}
+.filter-badge-label input[type="checkbox"]:checked + .filter-badge {
+    background: var(--cat-color, #007cba);
+    color: #fff;
+    border: 2px solid var(--cat-color, #007cba);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.13);
+}
+.filter-badge-all:hover, .filter-badge-all:focus {
+    background: #007cba;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,124,186,0.13);
+    transform: translateY(-2px) scale(1.04);
+    border: 2px solid #007cba;
+    text-decoration: none;
+}
+
+.btn-filter-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 28px;
+    font-size: 1.08em;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(67,233,123,0.12);
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+    outline: none;
+    letter-spacing: 0.5px;
+}
+.btn-filter-new:hover, .btn-filter-new:focus {
+    background: linear-gradient(90deg, #38f9d7 0%, #43e97b 100%);
+    color: #fff;
+    transform: translateY(-2px) scale(1.04);
+}
+.icon-filter-new {
+    font-size: 1.2em;
+    margin-right: 6px;
+    display: inline-block;
+}
+
+.articles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.article-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.article-card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    min-height: 420px;
+    cursor: pointer;
+}
+.article-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+}
+
+.article-image-modern {
+    width: 100%;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    background: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.article-image-modern img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.article-content-modern {
+    flex: 1;
+    padding: 22px 20px 18px 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.article-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #1a202c;
+}
+
+.article-meta {
+    font-size: 0.95em;
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+
+.article-categories {
+    margin-bottom: 10px;
+}
+
+.article-excerpt {
+    margin-bottom: 18px;
+    color: #333;
+    font-size: 1.05em;
+    flex: 1;
+}
+
+.article-actions-modern {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-modern {
+    padding: 7px 18px;
+    border-radius: 5px;
+    font-size: 0.98em;
+    text-decoration: none;
+    color: #fff;
+    transition: background 0.2s;
+    font-weight: 500;
+    border: none;
+    display: inline-block;
+    cursor: pointer;
+}
+.btn-read-more {
+    background: #28a745;
+}
+.btn-read-more:hover {
+    background: #218838;
+}
+.btn-edit {
+    background: #6c63ff;
+}
+.btn-edit:hover {
+    background: #5548c8;
+}
+.btn-comment {
+    background: #007cba;
+}
+.btn-comment:hover {
+    background: #005f8a;
+}
+
+.no-articles {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    margin: 40px 0;
+}
+
+.no-articles h3 {
+    color: #495057;
+    margin-bottom: 15px;
+    font-size: 1.8em;
+}
+
+.no-articles p {
+    color: #6c757d;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background: #007cba;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.btn:hover {
+    background: #005f8a;
+    text-decoration: none;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .articles-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .page-title {
+        font-size: 2.2em;
+    }
+    
+    .filters-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filters-badges {
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+// Soumission automatique du formulaire au changement de sélection de catégorie
+const filtersForm = document.getElementById('filters-form');
+if (filtersForm) {
+    filtersForm.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', () => {
+            filtersForm.submit();
+        });
+    });
+}
+</script>
+{% endblock %}

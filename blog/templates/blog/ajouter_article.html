@@ -1,0 +1,461 @@
+{% extends "blog/base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Ajouter un Article" %}{% endblock %}
+{% block content %}
+<style>
+  .add-article-container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    padding: 32px 36px 24px 36px;
+  }
+  .add-article-container h1 {
+    text-align: center;
+    color: #007cba;
+    margin-bottom: 32px;
+    font-size: 2em;
+    font-weight: 700;
+  }
+  .form-group {
+    margin-bottom: 22px;
+    display: flex;
+    flex-direction: column;
+  }
+  .form-group label {
+    font-weight: 600;
+    margin-bottom: 7px;
+    color: #007cba;
+  }
+
+  .form-group input[type="text"],
+  .form-group textarea,
+  .form-group select {
+    padding: 10px 12px;
+    border: 1px solid #cfd8dc;
+    border-radius: 6px;
+    font-size: 1em;
+    background: #f7fafc;
+    transition: border 0.2s;
+  }
+  .form-group input[type="text"]:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    border: 1.5px solid #007cba;
+    outline: none;
+    background: #fff;
+  }
+  .form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+  .form-group button[type="submit"] {
+    background: #007cba;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 28px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-right: 10px;
+  }
+  .form-group button[type="submit"]:hover {
+    background: #005f8a;
+  }
+  .form-group .btn-secondary {
+    background: #e0e0e0;
+    color: #333;
+    border-radius: 6px;
+    padding: 12px 28px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.2s;
+    border: none;
+    margin-left: 0;
+  }  .form-group .btn-secondary:hover {
+    background: #bdbdbd;
+    color: #222;
+  }
+
+  /* Styles pour la génération IA */
+  .ai-generation-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    color: white;
+  }
+
+  .ai-header h3 {
+    color: white;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.4em;
+  }
+
+  .ai-description {
+    opacity: 0.9;
+    margin-bottom: 20px;
+    font-size: 1em;
+  }
+
+  .ai-prompt-container {
+    margin-bottom: 20px;
+  }
+
+  .ai-prompt-container label {
+    color: white !important;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .ai-prompt-container textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1em;
+    resize: vertical;
+    backdrop-filter: blur(10px);
+  }
+
+  .ai-prompt-container textarea::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .ai-prompt-container textarea:focus {
+    border-color: rgba(255, 255, 255, 0.6);
+    outline: none;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .ai-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .btn-ai-generate {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 25px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+  }
+
+  .btn-ai-generate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+  }
+
+  .btn-ai-generate:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .ai-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    font-style: italic;
+  }
+
+  .separator {
+    text-align: center;
+    margin: 30px 0;
+    position: relative;
+  }
+
+  .separator::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e0e0e0;
+  }
+
+  .separator span {
+    background: white;
+    padding: 0 20px;
+    color: #6c757d;
+    font-weight: 500;
+    position: relative;
+  }
+</style>
+<div class="add-article-container">
+  <h1>{% trans "Ajouter un Article" %}</h1>
+    <!-- Section Génération IA -->
+  <div class="ai-generation-section">
+    <div class="ai-header">
+      <h3><i class="fas fa-robot"></i> {% trans "Génération d'article par IA" %}</h3>
+      <p class="ai-description">{% trans "Laissez l'IA vous aider à créer un article complet avec une image d'illustration en quelques secondes" %}</p>
+    </div>
+    
+    <div class="ai-options">
+      <div class="ai-prompt-container">
+        <label for="aiPrompt">{% trans "Décrivez l'article que vous souhaitez générer:" %}</label>
+        <textarea id="aiPrompt" placeholder="{% trans 'Ex: Écris un article sur les meilleures pratiques du développement web moderne, incluant les frameworks JavaScript actuels...' %}" rows="3"></textarea>
+      </div>
+      
+      <div class="ai-controls">
+        <button type="button" id="generateArticleBtn" class="btn-ai-generate">
+          <i class="fas fa-magic"></i>
+          <span class="btn-text">{% trans "Générer l'article avec image" %}</span>
+        </button>
+        <div class="ai-loading" id="aiLoading" style="display: none;">
+          <i class="fas fa-spinner fa-spin"></i>
+          <span>{% trans "Génération en cours..." %}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="separator">
+    <span>{% trans "ou" %}</span>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" id="articleForm">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="{{ form.titre.id_for_label }}">{% trans "Titre:" %}</label>
+      {{ form.titre }}
+    </div>
+    <!-- L'auteur est automatiquement le user connecté, donc champ masqué et affichage du nom -->
+    <div class="form-group">
+      <label>{% trans "Auteur:" %}</label>
+      <input type="text" value="{{ user.get_full_name|default:user.username }}" readonly style="background:#f7fafc; color:#888; border:1px solid #cfd8dc; border-radius:6px; padding:10px 12px;">
+      {{ form.auteur.as_hidden }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.categories.id_for_label }}">{% trans "Catégories:" %}</label>
+      {{ form.categories }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.contenu.id_for_label }}">{% trans "Contenu:" %}</label>
+      {{ form.contenu }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.image.id_for_label }}">{% trans "Image:" %}</label>
+      {{ form.image }}
+    </div>
+    <div class="form-group" style="flex-direction: row; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 24px;">
+      <button type="submit">{% trans "Enregistrer" %}</button>
+      <a href="{% url 'home' %}" class="btn-secondary">{% trans "Annuler" %}</a>
+    </div>  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const generateBtn = document.getElementById('generateArticleBtn');
+    const aiPrompt = document.getElementById('aiPrompt');
+    const aiLoading = document.getElementById('aiLoading');
+    const articleForm = document.getElementById('articleForm');
+    
+    // Elements du formulaire
+    const titreInput = document.getElementById('{{ form.titre.id_for_label }}');
+    const contenuTextarea = document.getElementById('{{ form.contenu.id_for_label }}');
+    
+    generateBtn.addEventListener('click', async function() {
+        const prompt = aiPrompt.value.trim();
+          if (!prompt) {
+            alert("{% trans 'Veuillez décrire l\'article que vous souhaitez générer.' %}");
+            return;
+        }
+        
+        // Désactiver le bouton et afficher le chargement
+        generateBtn.disabled = true;
+        generateBtn.style.display = 'none';
+        aiLoading.style.display = 'flex';
+        
+        try {
+            const response = await fetch('{% url "generate_article_ai" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    'prompt': prompt
+                })
+            });
+            
+            const data = await response.json();
+              if (data.success) {
+                // Remplir le formulaire avec le contenu généré
+                titreInput.value = data.titre;
+                contenuTextarea.value = data.contenu;
+                
+                // Sélectionner les catégories suggérées
+                if (data.categories && data.categories.length > 0) {
+                    const categoriesSelect = document.getElementById('{{ form.categories.id_for_label }}');
+                    if (categoriesSelect) {
+                        // Désélectionner toutes les options
+                        for (let option of categoriesSelect.options) {
+                            option.selected = false;
+                        }
+                        
+                        // Sélectionner les catégories suggérées
+                        data.categories.forEach(categoryId => {
+                            const option = categoriesSelect.querySelector(`option[value="${categoryId}"]`);
+                            if (option) {
+                                option.selected = true;
+                            }
+                        });
+                    }
+                }
+                
+                // Gérer l'image générée si elle existe
+                if (data.image_url) {
+                    displayGeneratedImage(data.image_url);
+                }
+                
+                // Scroll vers le formulaire
+                articleForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  // Afficher un message de succès
+                let successMessage = "{% trans 'Article généré avec succès ! Vous pouvez le modifier avant de l\'enregistrer.' %}";
+                if (data.image_url) {
+                    successMessage += " {% trans 'Une image d\'illustration a également été générée.' %}";
+                }
+                showSuccessMessage(successMessage);
+                
+            } else {
+                throw new Error(data.error || "{% trans 'Erreur lors de la génération' %}");
+            }
+              } catch (error) {
+            console.error('Erreur:', error);
+            alert("{% trans 'Erreur lors de la génération de l\'article. Veuillez réessayer.' %}");
+        } finally {
+            // Réactiver le bouton
+            generateBtn.disabled = false;
+            generateBtn.style.display = 'flex';
+            aiLoading.style.display = 'none';
+        }
+    });
+    
+    // Fonction pour afficher l'image générée
+    function displayGeneratedImage(imageUrl) {
+        // Créer ou mettre à jour la section d'aperçu de l'image
+        let imagePreviewSection = document.getElementById('generatedImagePreview');
+        
+        if (!imagePreviewSection) {
+            imagePreviewSection = document.createElement('div');
+            imagePreviewSection.id = 'generatedImagePreview';
+            imagePreviewSection.style.cssText = `
+                margin: 20px 0;
+                padding: 20px;
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                border-radius: 15px;
+                border: 2px dashed #007cba;
+                text-align: center;
+            `;
+            
+            // Insérer avant le formulaire
+            articleForm.parentNode.insertBefore(imagePreviewSection, articleForm);
+        }
+        
+        imagePreviewSection.innerHTML = `
+            <h4 style="color: #007cba; margin-bottom: 15px;">
+                <i class="fas fa-image"></i> {% trans "Image générée par l'IA" %}
+            </h4>
+            <div style="position: relative; display: inline-block;">
+                <img src="${imageUrl}" alt="{% trans 'Image générée par IA' %}" 
+                     style="max-width: 100%; max-height: 300px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <div style="margin-top: 10px;">
+                    <button type="button" onclick="downloadGeneratedImage('${imageUrl}')" 
+                            style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; margin-right: 10px;">
+                        <i class="fas fa-download"></i> {% trans "Télécharger" %}
+                    </button>
+                    <button type="button" onclick="useAsArticleImage('${imageUrl}')" 
+                            style="background: #007cba; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;">
+                        <i class="fas fa-plus"></i> {% trans "Utiliser comme image d'article" %}
+                    </button>
+                </div>
+            </div>
+            <p style="color: #6c757d; font-size: 0.9em; margin-top: 10px;">
+                {% trans "Cette image a été générée automatiquement en rapport avec votre article" %}
+            </p>
+        `;
+    }
+    
+    // Fonction pour télécharger l'image générée
+    window.downloadGeneratedImage = function(imageUrl) {
+        const link = document.createElement('a');
+        link.href = imageUrl;
+        link.download = `article-image-${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+      // Fonction pour utiliser l'image comme image d'article
+    window.useAsArticleImage = function(imageUrl) {
+        // Note: Cette fonctionnalité nécessiterait une implémentation backend
+        // pour convertir l'URL en fichier uploadé
+        alert("{% trans 'Fonctionnalité à venir : utilisation de l\'image générée comme image d\'article' %}");
+    };
+    
+    function showSuccessMessage(message) {
+        const successDiv = document.createElement('div');
+        successDiv.className = 'ai-success-message';
+        successDiv.innerHTML = `
+            <i class="fas fa-check-circle"></i>
+            <span>${message}</span>
+        `;
+        successDiv.style.cssText = `
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.5s ease;
+        `;
+        
+        articleForm.insertBefore(successDiv, articleForm.firstChild);
+        
+        // Supprimer le message après 5 secondes
+        setTimeout(() => {
+            successDiv.remove();
+        }, 5000);
+    }
+});
+
+// Animation pour le message de succès
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

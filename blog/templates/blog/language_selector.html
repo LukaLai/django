@@ -1,0 +1,219 @@
+{% load i18n %}
+<div class="language-selector">
+    <div class="language-dropdown">
+        <button class="language-btn" type="button">
+            <svg class="language-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M2 12h20"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <span class="current-language">
+                {% for lang in languages %}
+                    {% if lang.is_current %}{{ lang.code|upper }}{% endif %}
+                {% endfor %}
+            </span>
+            <svg class="dropdown-arrow" viewBox="0 0 24 24">
+                <path d="M6 9l6 6 6-6"/>
+            </svg>
+        </button>        <div class="language-menu">
+            {% for lang in languages %}
+                <a href="{{ lang.url }}" 
+                   class="language-option {% if lang.is_current %}active{% endif %}"
+                   data-lang="{{ lang.code }}">
+                    <span class="lang-code">{{ lang.code|upper }}</span>
+                    <span class="lang-name">{{ lang.name }}</span>
+                    {% if lang.is_current %}
+                        <svg class="check-icon" viewBox="0 0 24 24">
+                            <path d="M20 6L9 17l-5-5"/>
+                        </svg>
+                    {% endif %}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+.language-selector {
+    position: relative;
+    display: inline-block;
+    margin: 0 15px;
+}
+
+.language-dropdown {
+    position: relative;
+}
+
+.language-btn {
+    background: none;
+    border: none;
+    color: var(--text-navbar, #ffffff);
+    font-weight: 600;
+    font-size: 0.9em;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    min-width: 70px;
+}
+
+.language-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.language-icon {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+}
+
+.dropdown-arrow {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    transition: transform 0.2s ease;
+}
+
+.language-dropdown:hover .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.current-language {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.language-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    min-width: 160px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+.language-dropdown:hover .language-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.language-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    color: var(--text-primary, #1f2937);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--border-light, #f3f4f6);
+}
+
+.language-option:last-child {
+    border-bottom: none;
+}
+
+.language-option:hover {
+    background: var(--bg-hover, #f8fafc);
+    color: var(--primary-color, #007cba);
+}
+
+.language-option.active {
+    background: var(--primary-light, #dbeafe);
+    color: var(--primary-color, #007cba);
+    font-weight: 600;
+}
+
+.lang-code {
+    font-weight: 700;
+    font-size: 0.8em;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary, #6b7280);
+    min-width: 24px;
+}
+
+.lang-name {
+    flex: 1;
+    color: var(--text-secondary, #6b7280);
+    margin-left: 12px;
+    text-align: left;
+}
+
+.check-icon {
+    width: 16px;
+    height: 16px;
+    stroke: var(--primary-color, #007cba);
+    stroke-width: 2.5;
+    fill: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .language-selector {
+        margin: 0 8px;
+    }
+    
+    .language-btn {
+        padding: 6px 10px;
+        font-size: 0.8em;
+        min-width: 60px;
+    }
+    
+    .language-menu {
+        min-width: 140px;
+    }
+    
+    .language-option {
+        padding: 10px 14px;
+    }
+}
+
+/* Mode sombre */
+[data-theme="dark"] .language-btn {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .language-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .language-menu {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+[data-theme="dark"] .language-option {
+    color: #e2e8f0;
+    border-color: #374151;
+}
+
+[data-theme="dark"] .language-option:hover {
+    background: #374151;
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .language-option.active {
+    background: #1e3a8a;
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .lang-code {
+    color: #9ca3af;
+}
+</style>

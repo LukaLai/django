@@ -1,0 +1,91 @@
+{% extends "blog/base.html" %}
+{% block title %}Liste des catégories{% endblock %}
+{% block content %}
+<style>
+  .categories-list-container {
+    max-width: 700px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    padding: 32px 36px 24px 36px;
+  }
+  .categories-list-container h1 {
+    text-align: center;
+    color: #007cba;
+    margin-bottom: 32px;
+    font-size: 2em;
+    font-weight: 700;
+  }
+  .categorie-item {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 16px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .categorie-item:last-child {
+    border-bottom: none;
+  }
+  .categorie-icone {
+    font-size: 1.7em;
+    margin-right: 10px;
+  }
+  .categorie-nom {
+    font-weight: bold;
+    color: #007cba;
+    font-size: 1.2em;
+  }
+  .categorie-couleur {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    display: inline-block;
+    margin-right: 10px;
+  }
+  .categorie-description {
+    color: #555;
+    font-size: 1em;
+  }
+  .btn-supprimer {
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 18px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: auto;
+    transition: background 0.2s;
+  }
+  .btn-supprimer:hover {
+    background: #c0392b;
+  }
+</style>
+<div class="categories-list-container">
+  <h1>Liste des Catégories</h1>
+  {% if categories %}
+    {% for cat in categories %}
+      <div class="categorie-item">
+        {% if cat.icone %}
+          <span class="categorie-icone">{{ cat.icone }}</span>
+        {% endif %}
+        <span class="categorie-couleur" style="background: {{ cat.couleur|default:'#007cba' }}"></span>
+        <span class="categorie-nom">{{ cat.nom }}</span>        {% if cat.description %}
+          <span class="categorie-description">{{ cat.description }}</span>
+        {% endif %}
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'supprimer_categorie' cat.id %}" style="margin-left:auto;">
+          {% csrf_token %}
+          <button type="submit" class="btn-supprimer" onclick="return confirm('Supprimer cette catégorie ?');">Supprimer</button>
+        </form>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>Aucune catégorie enregistrée.</p>
+  {% endif %}
+</div>
+{% endblock %}

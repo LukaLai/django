@@ -1,0 +1,113 @@
+{% extends "blog/base.html" %}
+{% block title %}Modifier l'article{% endblock %}
+{% block content %}
+<style>
+  .add-article-container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    padding: 32px 36px 24px 36px;
+  }
+  .add-article-container h1 {
+    text-align: center;
+    color: #007cba;
+    margin-bottom: 32px;
+    font-size: 2em;
+    font-weight: 700;
+  }
+  .form-group {
+    margin-bottom: 22px;
+    display: flex;
+    flex-direction: column;
+  }
+  .form-group label {
+    font-weight: 600;
+    margin-bottom: 7px;
+    color: #007cba;
+  }
+  .form-group input[type="text"],
+  .form-group textarea,
+  .form-group select {
+    padding: 10px 12px;
+    border: 1px solid #cfd8dc;
+    border-radius: 6px;
+    font-size: 1em;
+    background: #f7fafc;
+    transition: border 0.2s;
+  }
+  .form-group input[type="text"]:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    border: 1.5px solid #007cba;
+    outline: none;
+    background: #fff;
+  }
+  .form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+  .form-group button[type="submit"] {
+    background: #007cba;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 28px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-right: 10px;
+  }
+  .form-group button[type="submit"]:hover {
+    background: #005f8a;
+  }
+  .form-group .btn-secondary {
+    background: #e0e0e0;
+    color: #333;
+    border-radius: 6px;
+    padding: 12px 28px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.2s;
+    border: none;
+    margin-left: 0;
+  }
+  .form-group .btn-secondary:hover {
+    background: #bdbdbd;
+    color: #222;
+  }
+</style>
+<div class="add-article-container">
+  <h1>Modifier l'Article</h1>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="{{ form.titre.id_for_label }}">Titre:</label>
+      {{ form.titre }}
+    </div>
+    <div class="form-group">
+      <label>Auteur:</label>
+      <input type="text" value="{{ article.auteur }}" readonly style="background:#f7fafc; color:#888; border:1px solid #cfd8dc; border-radius:6px; padding:10px 12px;">
+      {{ form.auteur.as_hidden }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.categories.id_for_label }}">Catégories:</label>
+      {{ form.categories }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.contenu.id_for_label }}">Contenu:</label>
+      {{ form.contenu }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.image.id_for_label }}">Image:</label>
+      {{ form.image }}
+    </div>
+    <div class="form-group" style="flex-direction: row; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 24px;">
+      <button type="submit">Enregistrer</button>
+      <a href="{% url 'home' %}" class="btn-secondary">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "blog/base.html" %}
+{% block title %}Mon Profil{% endblock %}
+{% block content %}
+<div style="max-width: 500px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); padding: 32px 36px 24px 36px; text-align: center;">
+  <h1 style="color: #007cba;">Mon Profil</h1>
+  <svg style="width: 80px; height: 80px; fill: #007cba; margin-bottom: 16px;" viewBox="0 0 24 24">
+    <circle cx="12" cy="8" r="4"/>
+    <path d="M4 20c0-4 4-6 8-6s8 2 8 6"/>
+  </svg>
+  <p><strong>Nom d'utilisateur :</strong> {{ user.username }}</p>
+  <p><strong>Nom complet :</strong> {{ user.get_full_name }}</p>
+  <p><strong>Email :</strong> {{ user.email }}</p>
+</div>
+{% endblock %}

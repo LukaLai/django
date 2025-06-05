@@ -1,0 +1,106 @@
+{% extends 'blog/base.html' %}
+{% load i18n %}
+{% load date_tags %}
+{% load date_tags %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+    
+{% block title %}{% trans "Mon Blog Django" %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="welcome-section">
+        <h1 class="welcome-title">{% trans "Bienvenue sur notre Blog" %}</h1>
+        <p class="welcome-description">{% trans "Découvrez nos articles recommandés spécialement pour vous" %}</p>
+        <div class="action-buttons">
+            <a href="{% url 'articles' %}" class="btn btn-primary">{% trans "Voir tous les articles" %}</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'ajouter_article' %}" class="btn btn-secondary">{% trans "Ajouter un article" %}</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Section des recommandations personnalisées -->
+    {% if recommendations %}
+       {% with translated_title=_('Recommandé pour vous') %}
+    {% include 'blog/recommendations.html' with articles=recommendations title=translated_title %}
+{% endwith %}
+    {% endif %}    </div>
+</div>
+
+<style>
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.welcome-section {
+    text-align: center;
+    margin-bottom: 50px;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    color: white;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+
+.welcome-title {
+    font-size: 3em;
+    font-weight: 700;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.welcome-description {
+    font-size: 1.3em;
+    margin-bottom: 30px;
+    opacity: 0.95;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 30px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1em;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.btn-primary {
+    background: #fff;
+    color: #667eea;
+    border-color: #fff;
+}
+
+.btn-primary:hover {
+    background: transparent;
+    color: #fff;
+    border-color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255,255,255,0.2);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: #fff;
+    border-color: #fff;
+}
+
+.btn-secondary:hover {
+    background: #fff;
+    color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255,255,255,0.2);
+}
+</style>
+{% endblock %}

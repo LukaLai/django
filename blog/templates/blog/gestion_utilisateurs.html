@@ -1,0 +1,948 @@
+{% extends 'blog/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Gestion des utilisateurs" %}{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Conteneur principal */
+    .container-fluid {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+        padding: 20px;
+    }
+    
+    /* En-tête de page */
+    h1 {
+        color: var(--text-primary);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    
+    h1 i {
+        color: var(--accent-color);
+        font-size: 2.5rem;
+    }
+    
+    /* Cards */
+    .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: 0 4px 16px var(--shadow-light);
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+    
+    .card:hover {
+        box-shadow: 0 8px 32px var(--shadow-medium);
+        transform: translateY(-2px);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+        color: white;
+        border-bottom: none;
+        border-radius: 12px 12px 0 0 !important;
+        padding: 20px;
+        font-weight: 600;
+    }
+    
+    .card-header h5 {
+        margin: 0;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .card-body {
+        padding: 25px;
+        color: var(--text-primary);
+    }
+    
+    /* Cartes statistiques */
+    .bg-primary, .bg-success, .bg-info, .bg-warning, .bg-secondary, .bg-dark {
+        border: none;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .bg-primary::before, .bg-success::before, .bg-info::before, 
+    .bg-warning::before, .bg-secondary::before, .bg-dark::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .bg-primary:hover, .bg-success:hover, .bg-info:hover, 
+    .bg-warning:hover, .bg-secondary:hover, .bg-dark:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 12px 40px var(--shadow-medium);
+    }
+    
+    .bg-primary .card-body, .bg-success .card-body, .bg-info .card-body,
+    .bg-warning .card-body, .bg-secondary .card-body, .bg-dark .card-body {
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .bg-primary .card-body h5, .bg-success .card-body h5, .bg-info .card-body h5,
+    .bg-warning .card-body h5, .bg-secondary .card-body h5, .bg-dark .card-body h5 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    
+    .bg-primary .card-body p, .bg-success .card-body p, .bg-info .card-body p,
+    .bg-warning .card-body p, .bg-secondary .card-body p, .bg-dark .card-body p {
+        font-size: 0.9rem;
+        font-weight: 500;
+        opacity: 0.9;
+    }
+    
+    /* Couleurs des cartes statistiques */
+    .bg-primary { background: linear-gradient(135deg, #007cba, #005a8c) !important; }
+    .bg-success { background: linear-gradient(135deg, #28a745, #1e7e34) !important; }
+    .bg-info { background: linear-gradient(135deg, #17a2b8, #138496) !important; }
+    .bg-warning { background: linear-gradient(135deg, #ffc107, #e0a800) !important; }
+    .bg-secondary { background: linear-gradient(135deg, #6c757d, #545b62) !important; }
+    .bg-dark { background: linear-gradient(135deg, #343a40, #23272b) !important; }
+    
+    /* Formulaires */
+    .form-control {
+        background: var(--bg-secondary);
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        padding: 12px 16px;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+    
+    .form-control:focus {
+        background: var(--bg-secondary);
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 0.2rem rgba(0, 124, 186, 0.15);
+        color: var(--text-primary);
+    }
+    
+    .form-control::placeholder {
+        color: var(--text-secondary);
+    }
+    
+    label {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+    
+    /* Select spéciaux dans le tableau */
+    .form-control-sm {
+        padding: 6px 10px;
+        font-size: 0.85rem;
+        border-radius: 6px;
+        min-width: 140px;
+    }
+    
+    .role-select, .statut-select {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .role-select:hover, .statut-select:hover {
+        border-color: var(--accent-color);
+        box-shadow: 0 2px 8px rgba(0, 124, 186, 0.2);
+    }
+    
+    /* Tableau */
+    .table {
+        background: var(--bg-card);
+        border-radius: 8px;
+        overflow: hidden;
+        margin: 0;
+    }
+    
+    .table th {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        border: none;
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 15px 12px;
+    }
+    
+    .table td {
+        color: var(--text-primary);
+        border-color: var(--border-color);
+        padding: 15px 12px;
+        vertical-align: middle;
+    }
+    
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: var(--bg-hover);
+    }
+    
+    .table-responsive {
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+    
+    /* Badges */
+    .badge {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Boutons */
+    .btn {
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 12px 24px;
+        transition: all 0.3s ease;
+        border: none;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-sm {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, var(--accent-hover), #004670);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 124, 186, 0.3);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #6c757d, #545b62);
+        color: white;
+    }
+    
+    .btn-outline-primary {
+        border: 2px solid var(--accent-color);
+        color: var(--accent-color);
+        background: transparent;
+    }
+    
+    .btn-outline-primary:hover {
+        background: var(--accent-color);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 124, 186, 0.3);
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px var(--shadow-medium);
+    }
+    
+    /* Pagination */
+    .pagination {
+        margin: 30px 0;
+    }
+    
+    .page-link {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        padding: 12px 16px;
+        margin: 0 3px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+    
+    .page-link:hover {
+        background: var(--accent-color);
+        border-color: var(--accent-color);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 124, 186, 0.3);
+    }
+    
+    .page-item.active .page-link {
+        background: var(--accent-color);
+        border-color: var(--accent-color);
+        color: white;
+        box-shadow: 0 4px 12px rgba(0, 124, 186, 0.3);
+    }
+    
+    /* Modal */
+    .modal-content {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: 0 20px 60px var(--shadow-medium);
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+        color: white;
+        border-bottom: none;
+        border-radius: 12px 12px 0 0;
+        padding: 20px 25px;
+    }
+    
+    .modal-title {
+        font-weight: 700;
+        font-size: 1.3rem;
+    }
+    
+    .modal-body {
+        padding: 25px;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+    }
+    
+    .modal-footer {
+        background: var(--bg-hover);
+        border-top: 1px solid var(--border-color);
+        border-radius: 0 0 12px 12px;
+        padding: 20px 25px;
+    }
+    
+    .btn-close {
+        filter: invert(1);
+    }
+    
+    /* Icônes */
+    .fas, .far {
+        color: var(--accent-color);
+    }
+    
+    /* Alerts */
+    .alert {
+        border: none;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        font-weight: 600;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .alert::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--accent-color);
+    }
+    
+    .alert-success {
+        background: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+        border-left: 4px solid #28a745;
+    }
+    
+    .alert-danger {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        border-left: 4px solid #dc3545;
+    }
+    
+    /* Animation pour les changements */
+    .table tr {
+        transition: all 0.3s ease;
+    }
+    
+    .table tr:hover {
+        background-color: var(--bg-hover) !important;
+        transform: scale(1.01);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding: 10px;
+        }
+        
+        .card-body {
+            padding: 15px;
+        }
+        
+        .btn {
+            padding: 10px 16px;
+            font-size: 0.85rem;
+        }
+        
+        .table-responsive {
+            font-size: 0.85rem;
+        }
+        
+        .form-control {
+            padding: 10px 12px;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+        }
+        
+        h1 i {
+            font-size: 2rem;
+        }
+    }
+    
+    /* Animation d'apparition */
+    .fade-in {
+        animation: fadeIn 0.6s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Effet de survol sur les cartes stats */
+    .row .col-md-2:hover .card {
+        transform: translateY(-5px) scale(1.05);
+    }
+    
+    /* Style pour les selects avec focus */
+    select.form-control:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 124, 186, 0.25);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-users"></i> {% trans "Gestion des utilisateurs" %}
+            </h1>
+            
+            <!-- Statistiques rapides -->
+            <div class="row mb-4">
+                <div class="col-md-2">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5>{{ stats.total_utilisateurs }}</h5>
+                            <p class="mb-0">{% trans "Total utilisateurs" %}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5>{{ stats.utilisateurs_actifs }}</h5>
+                            <p class="mb-0">{% trans "Actifs" %}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5>{{ stats.redacteurs }}</h5>
+                            <p class="mb-0">{% trans "Rédacteurs" %}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h5>{{ stats.moderateurs }}</h5>
+                            <p class="mb-0">{% trans "Modérateurs" %}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-secondary text-white">
+                        <div class="card-body">
+                            <h5>{{ stats.editeurs }}</h5>
+                            <p class="mb-0">{% trans "Éditeurs" %}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-dark text-white">
+                        <div class="card-body">
+                            <h5>{{ stats.administrateurs }}</h5>
+                            <p class="mb-0">{% trans "Administrateurs" %}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filtres -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-filter"></i> {% trans "Filtres" %}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row">
+                        <div class="col-md-3">
+                            <label for="search">{% trans "Recherche" %}</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="search" 
+                                   name="search" 
+                                   value="{{ current_filters.search }}"
+                                   placeholder="{% trans 'Nom, email...' %}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="role">{% trans "Rôle" %}</label>
+                            <select class="form-control" id="role" name="role">
+                                <option value="">{% trans "Tous les rôles" %}</option>
+                                {% for role_code, role_name in roles_choices %}
+                                    <option value="{{ role_code }}" 
+                                            {% if current_filters.role == role_code %}selected{% endif %}>
+                                        {{ role_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="statut">{% trans "Statut" %}</label>
+                            <select class="form-control" id="statut" name="statut">
+                                <option value="">{% trans "Tous les statuts" %}</option>
+                                {% for statut_code, statut_name in statuts_choices %}
+                                    <option value="{{ statut_code }}" 
+                                            {% if current_filters.statut == statut_code %}selected{% endif %}>
+                                        {{ statut_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search"></i> {% trans "Filtrer" %}
+                            </button>
+                            <a href="{% url 'gestion_utilisateurs' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> {% trans "Reset" %}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Liste des utilisateurs -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> {% trans "Liste des utilisateurs" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Utilisateur" %}</th>
+                                    <th>{% trans "Email" %}</th>
+                                    <th>{% trans "Rôle" %}</th>
+                                    <th>{% trans "Statut" %}</th>
+                                    <th>{% trans "Inscription" %}</th>
+                                    <th>{% trans "Articles" %}</th>
+                                    <th>{% trans "Commentaires" %}</th>
+                                    <th>{% trans "Actions" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for utilisateur in page_obj %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ utilisateur.username }}</strong><br>
+                                        <small class="text-muted">
+                                            {{ utilisateur.first_name }} {{ utilisateur.last_name }}
+                                        </small>
+                                    </td>
+                                    <td>{{ utilisateur.email }}</td>
+                                    <td>
+                                        <select class="form-control form-control-sm role-select" 
+                                                data-user-id="{{ utilisateur.id }}">
+                                            {% for role_code, role_name in roles_choices %}
+                                                <option value="{{ role_code }}" 
+                                                        {% if utilisateur.profil.role == role_code %}selected{% endif %}>
+                                                    {{ role_name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="form-control form-control-sm statut-select" 
+                                                data-user-id="{{ utilisateur.id }}">
+                                            {% for statut_code, statut_name in statuts_choices %}
+                                                <option value="{{ statut_code }}" 
+                                                        {% if utilisateur.profil.statut == statut_code %}selected{% endif %}>
+                                                    {{ statut_name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>{{ utilisateur.profil.date_inscription|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ utilisateur.nb_articles }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ utilisateur.nb_commentaires }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'voir_profil_utilisateur' utilisateur.id %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">
+                                        {% trans "Aucun utilisateur trouvé" %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="{% trans 'Navigation des pages' %}">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_filters.search %}&search={{ current_filters.search }}{% endif %}{% if current_filters.role %}&role={{ current_filters.role }}{% endif %}{% if current_filters.statut %}&statut={{ current_filters.statut }}{% endif %}">
+                                        {% trans "Précédent" %}
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if current_filters.search %}&search={{ current_filters.search }}{% endif %}{% if current_filters.role %}&role={{ current_filters.role }}{% endif %}{% if current_filters.statut %}&statut={{ current_filters.statut }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_filters.search %}&search={{ current_filters.search }}{% endif %}{% if current_filters.role %}&role={{ current_filters.role }}{% endif %}{% if current_filters.statut %}&statut={{ current_filters.statut }}{% endif %}">
+                                        {% trans "Suivant" %}
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Confirmation" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    {% trans "Annuler" %}
+                </button>
+                <button type="button" class="btn btn-primary" id="confirmAction">
+                    {% trans "Confirmer" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des cartes statistiques
+    const statCards = document.querySelectorAll('.bg-primary, .bg-success, .bg-info, .bg-warning, .bg-secondary, .bg-dark');
+    statCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s ease';
+        
+        setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    // Animation du tableau
+    const table = document.querySelector('.table');
+    if (table) {
+        table.style.opacity = '0';
+        table.style.transform = 'translateY(30px)';
+        table.style.transition = 'all 0.8s ease';
+        
+        setTimeout(() => {
+            table.style.opacity = '1';
+            table.style.transform = 'translateY(0)';
+        }, 800);
+    }
+    
+    // Gestion des changements de rôle avec confirmation visuelle
+    document.querySelectorAll('.role-select').forEach(function(select) {
+        const originalValue = select.value;
+        
+        select.addEventListener('change', function() {
+            const userId = this.dataset.userId;
+            const newRole = this.value;
+            const userName = this.closest('tr').querySelector('strong').textContent;
+            const roleText = this.options[this.selectedIndex].text;
+            
+            // Animation de changement
+            this.style.background = 'linear-gradient(135deg, #ffc107, #e0a800)';
+            this.style.color = '#212529';
+            this.style.transform = 'scale(1.05)';
+            
+            document.getElementById('confirmMessage').innerHTML = 
+                `<strong>{% trans "Êtes-vous sûr de vouloir changer le rôle de" %}</strong><br>
+                 <span class="text-primary">${userName}</span> {% trans "vers" %} 
+                 <span class="badge bg-primary">${roleText}</span> ?`;
+            
+            document.getElementById('confirmAction').onclick = function() {
+                changeRole(userId, newRole, select);
+                bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+            };
+            
+            // Annulation
+            document.querySelector('.btn-secondary[data-bs-dismiss="modal"]').onclick = function() {
+                select.value = originalValue;
+                resetSelectStyle(select);
+            };
+            
+            new bootstrap.Modal(document.getElementById('confirmModal')).show();
+        });
+    });
+    
+    // Gestion des changements de statut avec confirmation visuelle
+    document.querySelectorAll('.statut-select').forEach(function(select) {
+        const originalValue = select.value;
+        
+        select.addEventListener('change', function() {
+            const userId = this.dataset.userId;
+            const newStatus = this.value;
+            const userName = this.closest('tr').querySelector('strong').textContent;
+            const statusText = this.options[this.selectedIndex].text;
+            
+            // Animation de changement
+            this.style.background = 'linear-gradient(135deg, #17a2b8, #138496)';
+            this.style.color = 'white';
+            this.style.transform = 'scale(1.05)';
+            
+            document.getElementById('confirmMessage').innerHTML = 
+                `<strong>{% trans "Êtes-vous sûr de vouloir changer le statut de" %}</strong><br>
+                 <span class="text-primary">${userName}</span> {% trans "vers" %} 
+                 <span class="badge bg-info">${statusText}</span> ?`;
+            
+            document.getElementById('confirmAction').onclick = function() {
+                changeStatus(userId, newStatus, select);
+                bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+            };
+            
+            // Annulation
+            document.querySelector('.btn-secondary[data-bs-dismiss="modal"]').onclick = function() {
+                select.value = originalValue;
+                resetSelectStyle(select);
+            };
+            
+            new bootstrap.Modal(document.getElementById('confirmModal')).show();
+        });
+    });
+    
+    // Animation de hover sur les lignes du tableau
+    document.querySelectorAll('tbody tr').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.01)';
+            this.style.boxShadow = '0 4px 12px rgba(0, 124, 186, 0.2)';
+            this.style.borderRadius = '8px';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+            this.style.boxShadow = 'none';
+            this.style.borderRadius = '0';
+        });
+    });
+});
+
+function resetSelectStyle(select) {
+    select.style.background = '';
+    select.style.color = '';
+    select.style.transform = '';
+}
+
+function changeRole(userId, newRole, selectElement) {
+    // Animation de chargement
+    selectElement.style.background = 'linear-gradient(135deg, #6c757d, #545b62)';
+    selectElement.style.color = 'white';
+    selectElement.disabled = true;
+    
+    fetch('{% url "modifier_role_utilisateur" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            'user_id': userId,
+            'nouveau_role': newRole
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Animation de succès
+            selectElement.style.background = 'linear-gradient(135deg, #28a745, #1e7e34)';
+            showAlert(data.message, 'success');
+            
+            setTimeout(() => {
+                resetSelectStyle(selectElement);
+                selectElement.disabled = false;
+            }, 2000);
+        } else {
+            selectElement.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
+            showAlert(data.message, 'danger');
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        }
+    })
+    .catch(error => {
+        selectElement.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
+        showAlert('{% trans "Erreur de connexion" %}', 'danger');
+        setTimeout(() => {
+            location.reload();
+        }, 2000);
+    });
+}
+
+function changeStatus(userId, newStatus, selectElement) {
+    // Animation de chargement
+    selectElement.style.background = 'linear-gradient(135deg, #6c757d, #545b62)';
+    selectElement.style.color = 'white';
+    selectElement.disabled = true;
+    
+    fetch('{% url "modifier_statut_utilisateur" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            'user_id': userId,
+            'nouveau_statut': newStatus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Animation de succès
+            selectElement.style.background = 'linear-gradient(135deg, #28a745, #1e7e34)';
+            showAlert(data.message, 'success');
+            
+            setTimeout(() => {
+                resetSelectStyle(selectElement);
+                selectElement.disabled = false;
+            }, 2000);
+        } else {
+            selectElement.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
+            showAlert(data.message, 'danger');
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        }
+    })
+    .catch(error => {
+        selectElement.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
+        showAlert('{% trans "Erreur de connexion" %}', 'danger');
+        setTimeout(() => {
+            location.reload();
+        }, 2000);
+    });
+}
+
+function showAlert(message, type) {
+    // Supprimer les anciennes alertes
+    document.querySelectorAll('.alert').forEach(alert => alert.remove());
+    
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '20px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.minWidth = '300px';
+    alertDiv.style.animation = 'slideInRight 0.5s ease';
+    alertDiv.innerHTML = `
+        <strong>${type === 'success' ? '✓' : '✗'}</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-hide after 5 seconds avec animation
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.style.animation = 'slideOutRight 0.5s ease';
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 500);
+        }
+    }, 5000);
+}
+
+// CSS pour les animations d'alerte
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
+{% csrf_token %}
+{% endblock %}

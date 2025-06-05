@@ -1,0 +1,381 @@
+{% load i18n %}
+{% load static %}
+{% load language_tags %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}{% trans "DjangAuto" %}{% endblock %}</title>
+      <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'blog/images/logo.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'blog/images/logo.png' %}">
+    <link rel="shortcut icon" href="{% static 'blog/images/logo.png' %}" type="image/png">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'blog/images/logo.png' %}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'blog/images/logo.png' %}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{% static 'blog/images/logo.png' %}">    <meta name="msapplication-TileImage" content="{% static 'blog/images/logo.png' %}">
+    <meta name="msapplication-TileColor" content="#667eea">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="{% static 'blog/css/themes.css' %}"><style>
+      @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap");
+      body {
+        font-family: "Open Sans", Arial, sans-serif;
+        margin: 0;
+        /* Les variables CSS sont maintenant appliquées depuis themes.css */
+      }      .navbar {
+        display: flex;
+        align-items: center;
+        padding: 30px 20px;
+        color: var(--text-navbar);
+        position: relative;
+        /* background-color maintenant défini par les variables CSS */
+      }.navbar h1 {
+        margin: 0;
+        font-size: 24px;
+      }      .logo-container {
+        display: flex;
+        align-items: center;
+        flex: 0 0 auto;
+      }
+      .logo-link {
+        color: inherit;
+        text-decoration: none;
+        transition: opacity 0.2s;
+        display: flex;
+        align-items: center;
+      }
+      .logo-link:hover {
+        opacity: 0.8;
+      }      .logo-image {
+        height: 90px;
+        width: auto;
+        max-width: 280px;
+        transition: transform 0.2s ease;
+        object-fit: contain;
+        filter: brightness(1);
+      }
+      .logo-image:hover {
+        transform: scale(1.05);
+        filter: brightness(1.1);
+      }      /* Adaptation responsive du logo */
+      @media (max-width: 768px) {
+        .logo-image {
+          height: 45px;
+          max-width: 200px;
+        }
+        .nav-left {
+          position: static;
+          transform: none;
+          flex: 1;
+          justify-content: center;
+          margin: 0 20px;
+        }
+        .navbar {
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+      }.nav-left a,
+      .nav-right a {
+        color: var(--text-navbar);
+        text-decoration: none;
+        margin: 0 15px;
+        font-weight: bold;
+        font-size: 1.1em;
+        transition: color 0.2s, background 0.2s, font-size 0.2s;
+        padding: 6px 14px;
+        border-radius: 5px;
+      }
+      .nav-left a:hover,
+      .nav-right a:hover {
+        background: var(--bg-secondary);
+        color: var(--accent-color);
+        font-size: 1.15em;
+        transition: color 0.2s, background 0.2s, font-size 0.2s;
+      }      .nav-left {
+        display: flex;
+        align-items: center;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .nav-dropdown-btn:hover {
+        background: var(--bg-secondary) !important;
+        color: var(--accent-color) !important;
+        font-size: 1.15em !important;
+      }
+      .nav-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        position: relative;
+      }
+      .login-btn {
+        background-color: var(--accent-hover);
+        padding: 5px 10px;
+        border-radius: 5px;
+      }
+      .user-menu {
+        position: relative;
+        display: inline-block;
+        margin-left: 20px;
+      }
+      .user-btn {
+        display: flex;
+        align-items: center;
+        background: none;
+        border: none;
+        color: var(--text-navbar);
+        font-weight: bold;
+        font-size: 1.1em;
+        cursor: pointer;
+        padding: 6px 14px;
+        border-radius: 5px;
+        transition: background 0.2s, color 0.2s;
+      }
+      .user-btn:hover, .user-menu.open .user-btn {
+        background: var(--bg-secondary);
+        color: var(--accent-color);
+      }
+      .user-icon {
+        width: 22px;
+        height: 22px;
+        margin-right: 8px;
+        fill: currentColor;
+      }
+      .dropdown-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 110%;
+        min-width: 160px;
+        border-radius: 8px;
+        z-index: 100;
+        flex-direction: column;
+        padding: 8px 0;
+        /* Styles maintenant définis dans themes.css */
+      }
+      .user-menu:hover .dropdown-menu, .user-menu.open .dropdown-menu {
+        display: flex;
+      }
+      .dropdown-menu a, .dropdown-menu button {
+        text-align: left;
+        padding: 10px 24px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.2s, color 0.2s;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: none;
+        border: none;
+        /* Couleurs maintenant définies dans themes.css */
+      }
+      /* Placez ici d'autres styles globaux */
+    </style>
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    <nav class="navbar">      <div class="logo-container">
+        <a href="{% url 'home' %}" class="logo-link">
+          <img src="{% static 'blog/images/logo.png' %}" alt="DjangAuto" class="logo-image">
+        </a>
+      </div>      <div class="nav-left">
+        <a href="{% url 'articles' %}">{% trans "Articles" %}</a>
+        <a href="{% url 'liste_categories' %}">{% trans "Catégories" %}</a>
+        
+        {% if user.is_authenticated %}
+        <a href="{% url 'chatgpt' %}"><i class="fas fa-robot"></i> {% trans "Compagnion" %}</a>
+        <a href="{% url 'test_log' %}">{% trans "Logs" %}</a>
+        {% endif %}
+        
+        <!-- Menu Administration pour les utilisateurs avec permissions -->
+        {% if user.is_authenticated and user.profil.peut_voir_statistiques %}
+        <div class="nav-dropdown" style="position: relative; display: inline-block; margin: 0 15px;">
+          <button class="nav-dropdown-btn" style="background: none; border: none; color: var(--text-navbar); font-weight: bold; font-size: 1.1em; cursor: pointer; padding: 6px 14px; border-radius: 5px; display: flex; align-items: center; gap: 6px; transition: color 0.2s, background 0.2s, font-size 0.2s;">
+            {% trans "Administration" %} &#x25BC;
+          </button>
+          <div class="nav-dropdown-menu" style="display: none; position: absolute; left: 0; top: 110%; background: #fff; color: #007cba; min-width: 220px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); border-radius: 8px; z-index: 200; flex-direction: column; padding: 8px 0;">
+            <a href="{% url 'statistiques_roles' %}" style="color: #007cba; background: none; border: none; text-align: left; padding: 10px 24px; font-size: 1em; font-weight: 600; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+              <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 24 24">
+                <path d="M3 3v18h18"/>
+                <path d="M18 17V9"/>
+                <path d="M13 17V5"/>
+                <path d="M8 17v-3"/>
+              </svg>
+              {% trans "Statistiques des rôles" %}
+            </a>
+            {% if user.profil.peut_gerer_utilisateurs %}
+            <a href="{% url 'gestion_utilisateurs' %}" style="color: #007cba; background: none; border: none; text-align: left; padding: 10px 24px; font-size: 1em; font-weight: 600; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+              <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 24 24">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              {% trans "Gestion des utilisateurs" %}
+            </a>
+            {% endif %}
+            {% if user.is_staff %}
+            <hr style="margin: 8px 16px; border: none; border-top: 1px solid rgba(0,124,186,0.2);">
+            <a href="/admin/" target="_blank" style="color: #007cba; background: none; border: none; text-align: left; padding: 10px 24px; font-size: 1em; font-weight: 600; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+              <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 24 24">
+                <path d="M12 2L2 7v10c0 5.55 3.84 10 9 11 1.16.21 2.76 0 3.5-1.5 1-2 .5-4.5-1-6.5-1.5-2-3.84-3-6.5-3-2.66 0-5 1-6.5 3"/>
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v6l4-4-4-4"/>
+              </svg>
+              {% trans "Administration Django" %}
+            </a>            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+        
+        {% if user.is_authenticated %}        <div class="nav-dropdown" style="position: relative; display: inline-block; margin: 0 15px;">
+          <button class="nav-dropdown-btn" style="background: none; border: none; color: var(--text-navbar); font-weight: bold; font-size: 1.1em; cursor: pointer; padding: 6px 14px; border-radius: 5px; display: flex; align-items: center; gap: 6px; transition: color 0.2s, background 0.2s, font-size 0.2s;">
+            {% trans "Ajouter" %} &#x25BC;
+          </button>
+          <div class="nav-dropdown-menu" style="display: none; position: absolute; left: 0; top: 110%; background: #fff; color: #007cba; min-width: 180px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); border-radius: 8px; z-index: 200; flex-direction: column; padding: 8px 0;">
+            <a href="{% url 'ajouter_article' %}" style="color: #007cba; background: none; border: none; text-align: left; padding: 10px 24px; font-size: 1em; font-weight: 600; cursor: pointer; text-decoration: none; display: block;">{% trans "Ajouter un article" %}</a>
+            <a href="{% url 'ajouter_categorie' %}" style="color: #007cba; background: none; border: none; text-align: left; padding: 10px 24px; font-size: 1em; font-weight: 600; cursor: pointer; text-decoration: none; display: block;">{% trans "Ajouter une catégorie" %}</a>
+          </div>
+        </div>
+        {% endif %}      </div>      <div class="nav-right">
+        <!-- Switch de thème moderne -->
+        <div class="theme-switch" data-tooltip="Changer le thème">
+          <div class="theme-switch-container">
+            <input type="checkbox" id="theme-toggle" class="theme-toggle">
+            <div class="theme-slider">
+              <svg class="theme-icon sun" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </svg>
+              <svg class="theme-icon moon" viewBox="0 0 24 24">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+            </div>
+          </div>        </div>
+ 
+        <!-- Sélecteur de langue -->
+        {% language_selector %}
+
+        {% if user.is_authenticated %}
+        <div class="user-menu">
+          <button class="user-btn" type="button">
+            <svg class="user-icon" viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 20c0-4 4-6 8-6s8 2 8 6"/>
+            </svg>
+            {{ user.get_full_name|default:user.username }}
+          </button>          <div class="dropdown-menu">
+            <a href="{% url 'mon_profil' %}" class="user-btn" style="color: #007cba; background: none; border: none;">
+              <svg class="user-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="4"/>
+                <path d="M4 20c0-4 4-6 8-6s8 2 8 6"/>
+              </svg>
+              {% trans "Mon Profil" %}
+            </a>
+            
+
+            <hr style="margin: 8px 16px; border: none; border-top: 1px solid rgba(0,124,186,0.2);">
+            <a href="{% url 'logout' %}" class="user-btn" style="color: #007cba; background: none; border: none;">
+              <svg class="user-icon" viewBox="0 0 24 24">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16,17 21,12 16,7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              {% trans "Déconnexion" %}
+            </a>
+          </div>
+        </div>        {% else %}
+        <a href="{% url 'register' %}" class="login-btn" style="margin-right: 10px">{% trans "S'inscrire" %}</a>
+        <a href="{% url 'login' %}" class="login-btn">{% trans "Connexion" %}</a>
+        {% endif %}
+      </div>
+    </nav>
+    <main>{% block content %}{% endblock %}</main>    
+    <script>
+      // Gestion du thème
+      const themeToggle = document.getElementById('theme-toggle');
+      const themeContainer = document.querySelector('.theme-switch-container');
+      const body = document.body;
+      
+      // Charger le thème sauvegardé ou utiliser le thème par défaut
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      if (savedTheme === 'dark') {
+        body.setAttribute('data-theme', 'dark');
+        themeToggle.checked = true;
+      }
+      
+      // Écouter les clics sur le conteneur du switch
+      themeContainer.addEventListener('click', function() {
+        themeToggle.checked = !themeToggle.checked;
+        
+        if (themeToggle.checked) {
+          body.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        } else {
+          body.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        }
+      });
+      
+      // Écouter les changements du checkbox directement
+      themeToggle.addEventListener('change', function() {
+        if (this.checked) {
+          body.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        } else {
+          body.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        }
+      });      // Dropdown menus
+      document.addEventListener('DOMContentLoaded', function() {
+        // Gérer tous les dropdowns de navigation
+        var dropdowns = document.querySelectorAll('.nav-dropdown');
+        dropdowns.forEach(function(dropdown) {
+          var btn = dropdown.querySelector('.nav-dropdown-btn');
+          var menu = dropdown.querySelector('.nav-dropdown-menu');
+          
+          if (btn && menu) {
+            btn.addEventListener('click', function(e) {
+              e.stopPropagation();
+              // Fermer tous les autres menus
+              dropdowns.forEach(function(otherDropdown) {
+                if (otherDropdown !== dropdown) {
+                  var otherMenu = otherDropdown.querySelector('.nav-dropdown-menu');
+                  if (otherMenu) otherMenu.style.display = 'none';
+                }
+              });
+              // Basculer le menu actuel
+              menu.style.display = (menu.style.display === 'flex' || menu.style.display === 'block') ? 'none' : 'block';
+            });
+            
+            menu.addEventListener('click', function(e) {
+              e.stopPropagation();
+            });
+          }
+        });
+        
+        // Fermer tous les menus en cliquant ailleurs
+        document.addEventListener('click', function() {
+          dropdowns.forEach(function(dropdown) {
+            var menu = dropdown.querySelector('.nav-dropdown-menu');
+            if (menu) menu.style.display = 'none';
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

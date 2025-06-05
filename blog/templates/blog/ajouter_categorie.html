@@ -1,0 +1,114 @@
+{% extends "blog/base.html" %}
+{% block title %}Ajouter une catégorie{% endblock %}
+{% block content %}
+<style>
+  .add-categorie-container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    padding: 32px 36px 24px 36px;
+  }
+  .add-categorie-container h1 {
+    text-align: center;
+    color: #007cba;
+    margin-bottom: 32px;
+    font-size: 2em;
+    font-weight: 700;
+  }
+  .form-group {
+    margin-bottom: 22px;
+    display: flex;
+    flex-direction: column;
+  }
+  .form-group label {
+    font-weight: 600;
+    margin-bottom: 7px;
+    color: #007cba;
+  }
+  .form-group input[type="text"],
+  .form-group textarea {
+    padding: 10px 12px;
+    border: 1px solid #cfd8dc;
+    border-radius: 6px;
+    font-size: 1em;
+    background: #f7fafc;
+    transition: border 0.2s;
+  }
+  .form-group input[type="text"]:focus,
+  .form-group textarea:focus {
+    border: 1.5px solid #007cba;
+    outline: none;
+    background: #fff;
+  }
+  .form-group textarea {
+    min-height: 60px;
+    resize: vertical;
+  }
+  .form-group input[type="color"] {
+    width: 60px;
+    height: 40px;
+    border: none;
+    background: none;
+    padding: 0;
+    margin-top: 4px;
+  }
+  .form-group button[type="submit"] {
+    background: #007cba;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 28px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-right: 10px;
+  }
+  .form-group button[type="submit"]:hover {
+    background: #005f8a;
+  }
+  .form-group .btn-secondary {
+    background: #e0e0e0;
+    color: #333;
+    border-radius: 6px;
+    padding: 12px 28px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.2s;
+    border: none;
+    margin-left: 0;
+  }
+  .form-group .btn-secondary:hover {
+    background: #bdbdbd;
+    color: #222;
+  }
+</style>
+<div class="add-categorie-container">
+  <h1>Ajouter une Catégorie</h1>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="{{ form.nom.id_for_label }}">Nom :</label>
+      {{ form.nom }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.description.id_for_label }}">Description :</label>
+      {{ form.description }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.icone.id_for_label }}">Icône :</label>
+      {{ form.icone }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.couleur.id_for_label }}">Couleur :</label>
+      <input type="color" name="couleur" id="{{ form.couleur.id_for_label }}" value="{{ form.couleur.value|default:'#007cba' }}">
+    </div>
+    <div class="form-group" style="flex-direction: row; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 24px;">
+      <button type="submit">Enregistrer</button>
+      <a href="{% url 'home' %}" class="btn-secondary">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,877 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Statistiques des rôles" %} - {{ block.super }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Conteneur principal */
+    .container {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+        padding: 20px;
+    }
+    
+    /* En-tête de page avec design moderne */
+    .page-header {
+        background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 30px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .page-header h1 {
+        color: white;
+        font-weight: 700;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .page-header h1 i {
+        font-size: 2.5rem;
+        opacity: 0.9;
+    }
+    
+    .page-header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin: 0;
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Cards avec design amélioré */
+    .card {
+        background: var(--bg-card);
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 124, 186, 0.08);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        margin-bottom: 25px;
+        overflow: hidden;
+    }
+    
+    .card:hover {
+        box-shadow: 0 12px 40px rgba(0, 124, 186, 0.15);
+        transform: translateY(-8px) scale(1.02);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+        color: white;
+        border-bottom: none;
+        border-radius: 16px 16px 0 0 !important;
+        padding: 25px 30px;
+        font-weight: 600;
+        position: relative;
+    }
+    
+    .card-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    }
+    
+    .card-header h5 {
+        margin: 0;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+    }
+    
+    .card-header i {
+        font-size: 1.4rem;
+        opacity: 0.9;
+    }
+    
+    .card-body {
+        padding: 30px;
+        color: var(--text-primary);
+        background: var(--bg-card);
+    }    
+    /* Cartes statistiques avec effets visuels avancés */
+    .stat-card {
+        border: none;
+        border-radius: 20px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        overflow: hidden;
+        position: relative;
+        background: var(--bg-card);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-12px) scale(1.05);
+        box-shadow: 0 20px 60px rgba(0, 124, 186, 0.2);
+    }
+    
+    .stat-card:hover::before {
+        height: 8px;
+        background: linear-gradient(90deg, rgba(255,255,255,0.2), rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+    }
+    
+    .stat-card .card-body {
+        padding: 35px 25px;
+        text-align: center;
+        position: relative;
+    }
+    
+    .stat-card h3 {
+        font-size: 3rem;
+        font-weight: 800;
+        margin: 15px 0 8px 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card i {
+        opacity: 0.8;
+        margin-bottom: 15px;
+        font-size: 2.5rem;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+    
+    .stat-card p {
+        font-size: 1rem;
+        font-weight: 600;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+    
+    /* Couleurs des cartes avec gradients améliorés */
+    .bg-primary { 
+        background: linear-gradient(135deg, #007cba 0%, #005a8c 50%, #004670 100%) !important; 
+    }
+    .bg-success { 
+        background: linear-gradient(135deg, #28a745 0%, #1e7e34 50%, #155724 100%) !important; 
+    }
+    .bg-info { 
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 50%, #0c5460 100%) !important; 
+    }
+    .bg-warning { 
+        background: linear-gradient(135deg, #ffc107 0%, #e0a800 50%, #b8860b 100%) !important; 
+        color: #212529 !important;
+    }
+    .bg-secondary { 
+        background: linear-gradient(135deg, #6c757d 0%, #545b62 50%, #343a40 100%) !important; 
+    }
+    .bg-dark { 
+        background: linear-gradient(135deg, #343a40 0%, #23272b 50%, #1a1e21 100%) !important; 
+    }    
+    /* Barres de progression modernisées */
+    .progress {
+        height: 16px;
+        border-radius: 12px;
+        background: var(--bg-hover);
+        overflow: hidden;
+        margin: 12px 0;
+        position: relative;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .progress-bar {
+        border-radius: 12px;
+        transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        position: relative;
+        background: linear-gradient(90deg, var(--accent-color), var(--accent-hover));
+        overflow: hidden;
+    }
+    
+    .progress-bar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: shimmer 2.5s infinite;
+    }
+    
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(180deg, rgba(255,255,255,0.2), transparent);
+        border-radius: 12px 12px 0 0;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+    
+    /* Badges avec design premium */
+    .badge-role {
+        font-size: 0.85rem;
+        padding: 10px 16px;
+        border-radius: 25px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        position: relative;
+        overflow: hidden;
+        border: 2px solid rgba(255,255,255,0.2);
+    }
+    
+    .badge-role::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .badge-role:hover::before {
+        left: 100%;
+    }
+    
+    .badge {
+        font-size: 0.9rem;
+        padding: 10px 14px;
+        border-radius: 25px;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        border: 1px solid rgba(255,255,255,0.1);
+    }    
+    /* Tableaux avec design moderne */
+    .table {
+        background: var(--bg-card);
+        border-radius: 12px;
+        overflow: hidden;
+        margin: 0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    
+    .table th {
+        background: linear-gradient(135deg, var(--bg-hover), var(--bg-secondary));
+        color: var(--text-primary);
+        border: none;
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 18px 15px;
+        position: relative;
+    }
+    
+    .table th::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+    }
+    
+    .table td {
+        color: var(--text-primary);
+        border-color: var(--border-color);
+        padding: 18px 15px;
+        vertical-align: middle;
+        transition: all 0.3s ease;
+    }
+    
+    .table-striped tbody tr:nth-of-type(odd) {
+        background: linear-gradient(135deg, var(--bg-hover), rgba(0, 124, 186, 0.02));
+    }
+    
+    .table tbody tr:hover {
+        background: linear-gradient(135deg, rgba(0, 124, 186, 0.08), rgba(0, 124, 186, 0.04));
+        transform: scale(1.01);
+        box-shadow: 0 4px 12px rgba(0, 124, 186, 0.1);
+    }
+    
+    .table-responsive {
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    
+    /* Boutons avec effets premium */
+    .btn {
+        border-radius: 12px;
+        font-weight: 700;
+        padding: 14px 28px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: none;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-size: 0.9rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.6s ease;
+    }
+    
+    .btn:hover::before {
+        left: 100%;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+        color: white;
+        box-shadow: 0 4px 15px rgba(0, 124, 186, 0.3);
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, var(--accent-hover), #004670);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(0, 124, 186, 0.4);
+    }
+    
+    .btn-warning {
+        background: linear-gradient(135deg, #ffc107, #e0a800);
+        color: #212529;
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+    }
+    
+    .btn-info {
+        background: linear-gradient(135deg, #17a2b8, #138496);
+        color: white;
+        box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+    }
+    
+    .btn-dark {
+        background: linear-gradient(135deg, #343a40, #23272b);
+        color: white;
+        box-shadow: 0 4px 15px rgba(52, 58, 64, 0.3);
+    }
+    
+    .btn:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 25px var(--shadow-medium);
+    }
+    
+    .w-100 {
+        width: 100% !important;
+    }
+    
+    /* Icônes */
+    .fas, .far {
+        color: var(--accent-color);
+    }
+    
+    .text-success .fas { color: #28a745 !important; }
+    .text-warning .fas { color: #ffc107 !important; }
+    .text-danger .fas { color: #dc3545 !important; }
+    .text-muted .fas { color: var(--text-secondary) !important; }
+    
+    /* Médailles pour le classement */
+    .fa-medal.text-warning { color: #FFD700 !important; }
+    .fa-medal.text-secondary { color: #C0C0C0 !important; }
+    .fa-medal.text-danger { color: #CD7F32 !important; }
+    
+    /* Alert */
+    .alert {
+        border: none;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        border-left: 4px solid var(--accent-color);
+    }
+    
+    .alert h6 {
+        color: var(--accent-color);
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .container {
+            padding: 10px;
+        }
+        
+        .card-body {
+            padding: 15px;
+        }
+        
+        .stat-card h3 {
+            font-size: 2rem;
+        }
+        
+        .btn {
+            padding: 10px 16px;
+            font-size: 0.85rem;
+        }
+        
+        .table-responsive {
+            font-size: 0.9rem;
+        }
+    }
+    
+    /* Animation d'apparition */
+    .fade-in {
+        animation: fadeIn 0.6s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 fade-in">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-chart-bar"></i> {% trans "Statistiques des rôles et permissions" %}</h1>
+            <p class="text-muted">{% trans "Vue d'ensemble de la répartition des utilisateurs par rôles et statuts" %}</p>
+        </div>
+    </div>
+    
+    <!-- Statistiques générales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x mb-2"></i>
+                    <h3>{{ stats_generales.total_utilisateurs }}</h3>
+                    <p class="mb-0">{% trans "Total utilisateurs" %}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-check fa-2x mb-2"></i>
+                    <h3>{{ stats_generales.utilisateurs_actifs }}</h3>
+                    <p class="mb-0">{% trans "Utilisateurs actifs" %}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-newspaper fa-2x mb-2"></i>
+                    <h3>{{ stats_generales.articles_total }}</h3>
+                    <p class="mb-0">{% trans "Articles publiés" %}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-warning text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-comments fa-2x mb-2"></i>
+                    <h3>{{ stats_generales.commentaires_total }}</h3>
+                    <p class="mb-0">{% trans "Commentaires" %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Répartition par rôles -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-user-tag"></i> {% trans "Répartition par rôles" %}</h5>
+                </div>
+                <div class="card-body">
+                    {% for role_name, count in stats_roles.items %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-medium">{{ role_name }}</span>
+                            <span class="badge badge-role 
+                                {% if role_name == 'Administrateur' %}bg-dark
+                                {% elif role_name == 'Éditeur' %}bg-secondary
+                                {% elif role_name == 'Modérateur' %}bg-warning
+                                {% elif role_name == 'Rédacteur' %}bg-info
+                                {% else %}bg-light text-dark
+                                {% endif %}">
+                                {{ count }}
+                            </span>
+                        </div>
+                        <div class="progress">
+                            {% widthratio count stats_generales.total_utilisateurs 100 as percentage %}
+                            <div class="progress-bar 
+                                {% if role_name == 'Administrateur' %}bg-dark
+                                {% elif role_name == 'Éditeur' %}bg-secondary
+                                {% elif role_name == 'Modérateur' %}bg-warning
+                                {% elif role_name == 'Rédacteur' %}bg-info
+                                {% else %}bg-light
+                                {% endif %}" 
+                                role="progressbar" 
+                                style="width: {{ percentage }}%"
+                                aria-valuenow="{{ percentage }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                            </div>
+                        </div>
+                        <small class="text-muted">{{ percentage }}% {% trans "du total" %}</small>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">{% trans "Aucune donnée disponible" %}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Répartition par statuts -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-circle"></i> {% trans "Répartition par statuts" %}</h5>
+                </div>
+                <div class="card-body">
+                    {% for statut_name, count in stats_statuts.items %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-medium">{{ statut_name }}</span>
+                            <span class="badge badge-role 
+                                {% if statut_name == 'Actif' %}bg-success
+                                {% elif statut_name == 'Suspendu' %}bg-warning
+                                {% elif statut_name == 'Banni' %}bg-danger
+                                {% else %}bg-secondary
+                                {% endif %}">
+                                {{ count }}
+                            </span>
+                        </div>
+                        <div class="progress">
+                            {% widthratio count stats_generales.total_utilisateurs 100 as percentage %}
+                            <div class="progress-bar 
+                                {% if statut_name == 'Actif' %}bg-success
+                                {% elif statut_name == 'Suspendu' %}bg-warning
+                                {% elif statut_name == 'Banni' %}bg-danger
+                                {% else %}bg-secondary
+                                {% endif %}" 
+                                role="progressbar" 
+                                style="width: {{ percentage }}%"
+                                aria-valuenow="{{ percentage }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                            </div>
+                        </div>
+                        <small class="text-muted">{{ percentage }}% {% trans "du total" %}</small>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">{% trans "Aucune donnée disponible" %}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top auteurs et permissions détaillées -->
+    <div class="row">
+        <!-- Top auteurs -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-trophy"></i> {% trans "Top auteurs" %}</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_auteurs %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Rang" %}</th>
+                                    <th>{% trans "Utilisateur" %}</th>
+                                    <th>{% trans "Rôle" %}</th>
+                                    <th>{% trans "Articles" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for auteur in top_auteurs %}
+                                <tr>
+                                    <td>
+                                        {% if forloop.counter == 1 %}
+                                            <i class="fas fa-medal text-warning"></i>
+                                        {% elif forloop.counter == 2 %}
+                                            <i class="fas fa-medal text-secondary"></i>
+                                        {% elif forloop.counter == 3 %}
+                                            <i class="fas fa-medal text-danger"></i>
+                                        {% else %}
+                                            {{ forloop.counter }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ auteur.utilisateur.username }}</strong><br>
+                                        <small class="text-muted">
+                                            {{ auteur.utilisateur.first_name }} {{ auteur.utilisateur.last_name }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">
+                                            {{ auteur.get_role_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ auteur.nb_articles }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-info-circle fa-2x mb-2"></i>
+                        <p>{% trans "Aucun auteur d'article trouvé" %}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Matrice des permissions -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-key"></i> {% trans "Matrice des permissions" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Permission" %}</th>
+                                    <th class="text-center">{% trans "Réd." %}</th>
+                                    <th class="text-center">{% trans "Mod." %}</th>
+                                    <th class="text-center">{% trans "Édit." %}</th>
+                                    <th class="text-center">{% trans "Admin" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{% trans "Publier articles" %}</td>
+                                    <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                                    <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                                    <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                                    <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>{% trans "Modérer commentaires" %}</td>
+                                    <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                                    <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                                    <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                                    <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>{% trans "Gérer catégories" %}</td>
+                                    <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                                    <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                                    <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                                    <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>{% trans "Voir statistiques" %}</td>
+                                    <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                                    <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                                    <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                                    <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>{% trans "Gérer utilisateurs" %}</td>
+                                    <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                                    <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                                    <td class="text-center"><i class="fas fa-times text-muted"></i></td>
+                                    <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Actions rapides -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-tools"></i> {% trans "Actions rapides" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'gestion_utilisateurs' %}" class="btn btn-primary w-100">
+                                <i class="fas fa-users"></i> {% trans "Gérer utilisateurs" %}
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'gestion_utilisateurs' %}?statut=inactif" class="btn btn-warning w-100">
+                                <i class="fas fa-user-clock"></i> {% trans "Utilisateurs inactifs" %}
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'gestion_utilisateurs' %}?role=redacteur" class="btn btn-info w-100">
+                                <i class="fas fa-pen"></i> {% trans "Voir rédacteurs" %}
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'gestion_utilisateurs' %}?role=administrateur" class="btn btn-dark w-100">
+                                <i class="fas fa-user-shield"></i> {% trans "Voir admins" %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Légende -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h6><i class="fas fa-info-circle"></i> {% trans "Légende des rôles" %}</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>{% trans "Lecteur" %}:</strong> {% trans "Consultation uniquement" %}</p>
+                        <p class="mb-1"><strong>{% trans "Rédacteur" %}:</strong> {% trans "Peut écrire et publier des articles" %}</p>
+                        <p class="mb-1"><strong>{% trans "Modérateur" %}:</strong> {% trans "Peut modérer les commentaires" %}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>{% trans "Éditeur" %}:</strong> {% trans "Gestion complète du contenu" %}</p>
+                        <p class="mb-1"><strong>{% trans "Administrateur" %}:</strong> {% trans "Accès complet au système" %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des cartes statistiques
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'all 0.6s ease';
+        
+        setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 150);
+    });
+    
+    // Animation des barres de progression
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach((bar, index) => {
+        const finalWidth = bar.style.width;
+        bar.style.width = '0%';
+        
+        setTimeout(() => {
+            bar.style.transition = 'width 1.5s ease-in-out';
+            bar.style.width = finalWidth;
+        }, 500 + index * 100);
+        
+        // Tooltip pour les pourcentages
+        const percentage = bar.getAttribute('aria-valuenow');
+        if (percentage) {
+            bar.setAttribute('title', `${percentage}%`);
+            bar.setAttribute('data-bs-toggle', 'tooltip');
+        }
+    });
+    
+    // Animation des cartes au scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animation = 'fadeIn 0.8s ease-in-out';
+            }
+        });
+    });
+    
+    document.querySelectorAll('.card').forEach(card => {
+        observer.observe(card);
+    });
+    
+    // Effet de hover sur les lignes du tableau
+    const tableRows = document.querySelectorAll('tbody tr');
+    tableRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.02)';
+            this.style.boxShadow = '0 4px 12px rgba(0, 124, 186, 0.15)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+            this.style.boxShadow = 'none';
+        });
+    });
+    
+    // Initialiser les tooltips Bootstrap si disponible
+    if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+});
+</script>
+{% endblock %}

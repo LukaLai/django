@@ -1,0 +1,310 @@
+# English translations for DjangAuto Blog
+# Copyright (C) 2025 DjangAuto
+# This file is distributed under the same license as the DjangAuto package.
+# Translator <translator@example.com>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: DjangAuto Blog 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-06-04 15:08+0200\n"
+"PO-Revision-Date: 2025-06-04 11:30+0200\n"
+"Last-Translator: Assistant <assistant@example.com>\n"
+"Language-Team: English <en@li.org>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\blog\models.py:55
+msgid "1 minute de lecture"
+msgstr "1 minute read"
+
+#: .\blog\models.py:57
+#, python-format
+msgid "%(temps)d minutes de lecture"
+msgstr "%(temps)d minutes read"
+
+#: .\blog\templates\blog\ajouter_article.html:3
+#: .\blog\templates\blog\ajouter_article.html:84
+#: .\blog\templates\blog\articles.html:81
+msgid "Ajouter un Article"
+msgstr "Add an Article"
+
+#: .\blog\templates\blog\ajouter_article.html:88
+msgid "Titre:"
+msgstr "Title:"
+
+#: .\blog\templates\blog\ajouter_article.html:93
+msgid "Auteur:"
+msgstr "Author:"
+
+#: .\blog\templates\blog\ajouter_article.html:98
+msgid "Catégories:"
+msgstr "Categories:"
+
+#: .\blog\templates\blog\ajouter_article.html:102
+msgid "Contenu:"
+msgstr "Content:"
+
+#: .\blog\templates\blog\ajouter_article.html:106
+msgid "Image:"
+msgstr "Image:"
+
+#: .\blog\templates\blog\ajouter_article.html:110
+msgid "Enregistrer"
+msgstr "Save"
+
+#: .\blog\templates\blog\ajouter_article.html:111
+msgid "Annuler"
+msgstr "Cancel"
+
+#: .\blog\templates\blog\article_detail.html:5
+#: .\blog\templates\blog\articles.html:8 .\blog\templates\blog\home.html:8
+msgid "Mon Blog Django"
+msgstr "My Django Blog"
+
+#: .\blog\templates\blog\article_detail.html:11
+msgid "Retour aux articles"
+msgstr "Back to articles"
+
+#: .\blog\templates\blog\article_detail.html:32
+msgid "Par"
+msgstr "By"
+
+#: .\blog\templates\blog\article_detail.html:54
+msgid "Modifier l'article"
+msgstr "Edit article"
+
+#: .\blog\templates\blog\article_detail.html:57
+msgid "Ajouter un commentaire"
+msgstr "Add a comment"
+
+#: .\blog\templates\blog\article_detail.html:66
+msgid "Commentaires"
+msgstr "Comments"
+
+#: .\blog\templates\blog\article_detail.html:83
+msgid "Aucun commentaire pour le moment."
+msgstr "No comments yet."
+
+#: .\blog\templates\blog\article_detail.html:86
+msgid "Soyez le premier à commenter !"
+msgstr "Be the first to comment!"
+
+#: .\blog\templates\blog\articles.html:8 .\blog\templates\blog\base.html:188
+msgid "Articles"
+msgstr "Articles"
+
+#: .\blog\templates\blog\articles.html:13
+msgid "Tous les Articles"
+msgstr "All Articles"
+
+#: .\blog\templates\blog\articles.html:14
+msgid "Découvrez tous nos articles organisés par catégories"
+msgstr "Discover all our articles organized by categories"
+
+#: .\blog\templates\blog\articles.html:18
+msgid "Filtrer par catégorie"
+msgstr "Filter by category"
+
+#: .\blog\templates\blog\articles.html:20
+msgid "Toutes"
+msgstr "All"
+
+#: .\blog\templates\blog\articles.html:62
+msgid "Modifier"
+msgstr "Edit"
+
+#: .\blog\templates\blog\articles.html:64
+msgid "Commenter"
+msgstr "Comment"
+
+#: .\blog\templates\blog\articles.html:69
+msgid "Publié par"
+msgstr "Published by"
+
+#: .\blog\templates\blog\articles.html:69
+msgid "le"
+msgstr "on"
+
+#: .\blog\templates\blog\articles.html:78
+msgid "Aucun article trouvé"
+msgstr "No articles found"
+
+#: .\blog\templates\blog\articles.html:79
+msgid "Il n'y a pas encore d'articles publiés."
+msgstr "No articles have been published yet."
+
+#: .\blog\templates\blog\base.html:8
+msgid "DjangAuto"
+msgstr "DjangAuto"
+
+#: .\blog\templates\blog\base.html:189
+msgid "Catégories"
+msgstr "Categories"
+
+#: .\blog\templates\blog\base.html:191
+msgid "Logs"
+msgstr "Logs"
+
+#: .\blog\templates\blog\base.html:195
+msgid "Ajouter"
+msgstr "Add"
+
+#: .\blog\templates\blog\base.html:198 .\blog\templates\blog\home.html:18
+msgid "Ajouter un article"
+msgstr "Add article"
+
+#: .\blog\templates\blog\base.html:199
+msgid "Ajouter une catégorie"
+msgstr "Add category"
+
+#: .\blog\templates\blog\base.html:243
+msgid "Profil"
+msgstr "Profile"
+
+#: .\blog\templates\blog\base.html:251 .\blog\templates\blog\login.html:11
+msgid "Déconnexion"
+msgstr "Logout"
+
+#: .\blog\templates\blog\base.html:256 .\blog\templates\blog\login.html:4
+#: .\blog\templates\blog\login.html:8 .\blog\templates\blog\login.html:16
+msgid "Connexion"
+msgstr "Login"
+
+#: .\blog\templates\blog\home.html:13
+msgid "Bienvenue sur notre Blog"
+msgstr "Welcome to our Blog"
+
+#: .\blog\templates\blog\home.html:14
+msgid "Découvrez nos articles recommandés spécialement pour vous"
+msgstr "Discover our articles recommended especially for you"
+
+#: .\blog\templates\blog\home.html:16
+msgid "Voir tous les articles"
+msgstr "View all articles"
+
+#: .\blog\templates\blog\home.html:25
+msgid "Recommandé pour vous"
+msgstr "Recommended for you"
+
+#: .\blog\templates\blog\login.html:10
+msgid "Bienvenue"
+msgstr "Welcome"
+
+#: .\blog\templates\blog\recommendations.html:65
+msgid "Aucune recommandation disponible pour le moment."
+msgstr "No recommendations available at the moment."
+
+#: .\blog\templates\blog\recommendations.html:66
+msgid "Lisez plus d'articles pour obtenir des suggestions personnalisées !"
+msgstr "Read more articles to get personalized suggestions!"
+
+#: .\blog\templatetags\date_tags.py:25
+msgid "Dans le futur"
+msgstr "In the future"
+
+#: .\blog\templatetags\date_tags.py:31
+msgid "À l'instant"
+msgstr "Just now"
+
+#: .\blog\templatetags\date_tags.py:37
+msgid "Il y a 1 minute"
+msgstr "1 minute ago"
+
+#: .\blog\templatetags\date_tags.py:38
+msgid "Il y a {} minutes"
+msgstr "{} minutes ago"
+
+#: .\blog\templatetags\date_tags.py:44
+msgid "Il y a 1 heure"
+msgstr "1 hour ago"
+
+#: .\blog\templatetags\date_tags.py:45
+msgid "Il y a {} heures"
+msgstr "{} hours ago"
+
+#: .\blog\templatetags\date_tags.py:49
+msgid "Hier à {}"
+msgstr "Yesterday at {}"
+
+#: .\blog\templatetags\date_tags.py:57
+msgid "Lundi"
+msgstr "Monday"
+
+#: .\blog\templatetags\date_tags.py:58
+msgid "Mardi"
+msgstr "Tuesday"
+
+#: .\blog\templatetags\date_tags.py:59
+msgid "Mercredi"
+msgstr "Wednesday"
+
+#: .\blog\templatetags\date_tags.py:60
+msgid "Jeudi"
+msgstr "Thursday"
+
+#: .\blog\templatetags\date_tags.py:61
+msgid "Vendredi"
+msgstr "Friday"
+
+#: .\blog\templatetags\date_tags.py:62
+msgid "Samedi"
+msgstr "Saturday"
+
+#: .\blog\templatetags\date_tags.py:63
+msgid "Dimanche"
+msgstr "Sunday"
+
+#: .\blog\templatetags\date_tags.py:66
+msgid "{} à {}"
+msgstr "{} at {}"
+
+#: .\blog\templatetags\date_tags.py:72
+msgid "La semaine dernière"
+msgstr "Last week"
+
+#: .\blog\templatetags\date_tags.py:73
+msgid "Il y a {} semaines"
+msgstr "{} weeks ago"
+
+#: .\blog\templatetags\date_tags.py:79
+msgid "Le mois dernier"
+msgstr "Last month"
+
+#: .\blog\templatetags\date_tags.py:80
+msgid "Il y a {} mois"
+msgstr "{} months ago"
+
+#: .\blog\templatetags\date_tags.py:86
+msgid "L'année dernière"
+msgstr "Last year"
+
+#: .\blog\templatetags\date_tags.py:87
+msgid "Il y a {} ans"
+msgstr "{} years ago"
+
+#: .\blog\views.py:257
+msgid "Langue changée avec succès"
+msgstr "Language changed successfully"
+
+#: .\blog\views.py:259
+msgid "Langue non supportée"
+msgstr "Unsupported language"
+
+#: .\mon_projet\settings.py:122
+msgid "Français"
+msgstr "French"
+
+#: .\mon_projet\settings.py:123
+msgid "English"
+msgstr "English"
+
+#: .\mon_projet\settings.py:124
+msgid "Español"
+msgstr "Spanish"
+
+#~ msgid "Marques"
+#~ msgstr "Brands"

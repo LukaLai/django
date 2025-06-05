@@ -1,0 +1,818 @@
+{% extends 'blog/base.html' %}
+{% load i18n %}
+{% load date_tags %}
+
+{% block title %}{% trans "ChatGPT Conversation" %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="chat-header">
+                <h1>
+                    <i class="fas fa-robot"></i> {% trans "Assistant ChatGPT" %}
+                </h1>
+                <p class="chat-subtitle">{% trans "Posez vos questions et obtenez des réponses intelligentes" %}</p>
+            </div>
+            
+            <!-- Zone de chat -->
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot-message">
+                        <div class="message-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-text">
+                                {% trans "Bonjour ! Je suis votre assistant ChatGPT. Comment puis-je vous aider aujourd'hui ?" %}
+                            </div>
+                            <div class="message-time">
+                                <span id="welcomeTime"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                  <!-- Zone de saisie -->
+                <div class="chat-input-container">
+                    <!-- Options de génération -->
+                    <div class="generation-options">
+                        <div class="option-toggle">
+                            <input type="checkbox" id="generateImage" class="image-toggle">
+                            <label for="generateImage" class="toggle-label">
+                                <i class="fas fa-image"></i>
+                                <span>{% trans "Générer une image avec DALL-E" %}</span>
+                                <div class="toggle-switch"></div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <form id="chatForm" class="chat-form">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text" 
+                                   id="messageInput" 
+                                   name="message" 
+                                   class="form-control chat-input" 
+                                   placeholder="{% trans 'Tapez votre message...' %}"
+                                   autocomplete="off"
+                                   maxlength="2000">
+                            <button type="submit" class="btn btn-primary chat-send-btn" id="sendBtn">
+                                <i class="fas fa-paper-plane"></i>
+                                <span class="btn-text">{% trans "Envoyer" %}</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Indicateur de frappe -->
+                <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span class="typing-text">{% trans "ChatGPT est en train d'écrire..." %}</span>
+                </div>
+            </div>
+              <!-- Suggestions rapides -->
+            <div class="quick-suggestions">
+                <h6>{% trans "Suggestions d'articles pour votre blog automobile :" %}</h6>
+                <div class="suggestion-buttons">
+                    <button class="btn btn-outline-primary suggestion-btn" data-message="{% trans 'Écris un article sur les meilleures voitures électriques de 2025' %}">
+                        <i class="fas fa-car-battery"></i> {% trans "Voitures électriques" %}
+                    </button>
+                    <button class="btn btn-outline-primary suggestion-btn" data-message="{% trans 'Rédige un guide d\'entretien automobile pour débutants' %}">
+                        <i class="fas fa-wrench"></i> {% trans "Guide entretien" %}
+                    </button>
+                    <button class="btn btn-outline-primary suggestion-btn" data-message="{% trans 'Crée un comparatif des meilleures berlines familiales' %}">
+                        <i class="fas fa-car"></i> {% trans "Comparatif berlines" %}
+                    </button>
+                    <button class="btn btn-outline-primary suggestion-btn" data-message="{% trans 'Explique les tendances du marché automobile en 2025' %}">
+                        <i class="fas fa-chart-line"></i> {% trans "Tendances marché" %}
+                    </button>
+                    <button class="btn btn-outline-primary suggestion-btn" data-message="{% trans 'Présente les innovations technologiques dans l\'automobile' %}">
+                        <i class="fas fa-microchip"></i> {% trans "Innovations tech" %}
+                    </button>
+                    <button class="btn btn-outline-primary suggestion-btn" data-message="{% trans 'Rédige des conseils pour l\'achat d\'une première voiture' %}">
+                        <i class="fas fa-hand-holding-dollar"></i> {% trans "Premier achat" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Variables pour la cohérence avec le design global */
+.container {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    padding: 40px 15px;
+    min-height: 100vh;
+}
+
+/* En-tête du chat */
+.chat-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.chat-header h1 {
+    color: var(--text-primary);
+    font-weight: 700;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.chat-header h1 i {
+    color: var(--accent-color);
+    font-size: 2.2rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 124, 186, 0.3));
+    animation: pulse 2s infinite;
+}
+
+.chat-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    margin: 0;
+    font-weight: 400;
+}
+
+/* Conteneur principal du chat */
+.chat-container {
+    background: var(--bg-card);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 124, 186, 0.1);
+    overflow: hidden;
+    margin: 0 auto 30px auto;
+    border: 1px solid var(--border-color);
+    max-width: 1100px;
+    width: 100%;
+}
+
+/* Zone des messages */
+.chat-messages {
+    height: 500px;
+    overflow-y: auto;
+    padding: 25px;
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(0, 124, 186, 0.02) 100%);
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: var(--bg-hover);
+    border-radius: 10px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-hover);
+}
+
+/* Messages */
+.message {
+    display: flex;
+    margin-bottom: 20px;
+    animation: slideInMessage 0.4s ease-out;
+}
+
+.user-message {
+    justify-content: flex-end;
+}
+
+.bot-message {
+    justify-content: flex-start;
+}
+
+.message-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin: 0 12px;
+    flex-shrink: 0;
+}
+
+.user-message .message-avatar {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+    color: white;
+    order: 2;
+}
+
+.bot-message .message-avatar {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.message-content {
+    max-width: 70%;
+    position: relative;
+}
+
+.user-message .message-content {
+    order: 1;
+}
+
+.message-text {
+    background: var(--bg-hover);
+    padding: 15px 20px;
+    border-radius: 18px;
+    color: var(--text-primary);
+    line-height: 1.5;
+    word-wrap: break-word;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.user-message .message-text {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+    color: white;
+    border-bottom-right-radius: 6px;
+}
+
+.bot-message .message-text {
+    border-bottom-left-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.message-time {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 5px;
+    text-align: right;
+}
+
+.user-message .message-time {
+    text-align: left;
+}
+
+/* Images générées */
+.message-image {
+    margin-top: 15px;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.generated-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+}
+
+.generated-image:hover {
+    transform: scale(1.02);
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 12px;
+}
+
+.message-image:hover .image-overlay {
+    opacity: 1;
+}
+
+.download-btn {
+    background: rgba(0, 124, 186, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+    background: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 124, 186, 0.3);
+}
+
+/* Zone de saisie */
+.chat-input-container {
+    padding: 25px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-color);
+}
+
+/* Options de génération */
+.generation-options {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: var(--bg-hover);
+    border-radius: 15px;
+    border: 1px solid var(--border-color);
+}
+
+.option-toggle {
+    display: flex;
+    align-items: center;
+}
+
+.image-toggle {
+    display: none;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-weight: 500;
+    transition: all 0.3s ease;
+    padding: 8px 12px;
+    border-radius: 10px;
+    user-select: none;
+    position: relative;
+}
+
+.toggle-label:hover {
+    background: rgba(0, 124, 186, 0.1);
+    color: var(--accent-color);
+}
+
+.toggle-label i {
+    font-size: 1.1rem;
+    color: var(--accent-color);
+    transition: all 0.3s ease;
+}
+
+.toggle-switch {
+    width: 50px;
+    height: 26px;
+    background: var(--border-color);
+    border-radius: 13px;
+    position: relative;
+    transition: all 0.3s ease;
+    margin-left: auto;
+}
+
+.toggle-switch::after {
+    content: '';
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.image-toggle:checked + .toggle-label {
+    color: var(--accent-color);
+}
+
+.image-toggle:checked + .toggle-label .toggle-switch {
+    background: var(--accent-color);
+}
+
+.image-toggle:checked + .toggle-label .toggle-switch::after {
+    transform: translateX(24px);
+}
+
+.image-toggle:checked + .toggle-label i {
+    color: var(--accent-color);
+    transform: scale(1.1);
+}
+
+.chat-form {
+    display: flex;
+    gap: 10px;
+}
+
+.input-group {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+}
+
+.chat-input {
+    flex: 1;
+    background: var(--bg-hover);
+    border: 2px solid var(--border-color);
+    border-radius: 25px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    resize: none;
+}
+
+.chat-input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(0, 124, 186, 0.1);
+    outline: none;
+    background: var(--bg-card);
+}
+
+.chat-send-btn {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+    border: none;
+    border-radius: 25px;
+    padding: 12px 25px;
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.chat-send-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 124, 186, 0.3);
+}
+
+.chat-send-btn:disabled {
+    background: var(--text-secondary);
+    transform: none;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+/* Indicateur de frappe */
+.typing-indicator {
+    padding: 15px 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-hover);
+    border-top: 1px solid var(--border-color);
+}
+
+.typing-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.typing-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    animation: typingDots 1.4s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+.typing-dots span:nth-child(3) { animation-delay: 0s; }
+
+.typing-text {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+/* Suggestions rapides */
+.quick-suggestions {
+    background: var(--bg-card);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 124, 186, 0.08);
+    border: 1px solid var(--border-color);
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.quick-suggestions h6 {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.suggestion-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.suggestion-btn {
+    border: 2px solid var(--accent-color);
+    color: var(--accent-color);
+    background: transparent;
+    border-radius: 20px;
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.suggestion-btn i {
+    font-size: 1rem;
+    color: var(--accent-color);
+    transition: all 0.3s ease;
+}
+
+.suggestion-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 124, 186, 0.2);
+}
+
+.suggestion-btn:hover i {
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes slideInMessage {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes typingDots {
+    0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px 10px;
+    }
+    
+    .chat-header h1 {
+        font-size: 2rem;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .chat-messages {
+        height: 400px;
+        padding: 15px;
+    }
+    
+    .message-content {
+        max-width: 85%;
+    }
+    
+    .chat-input-container {
+        padding: 15px;
+    }
+    
+    .input-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .chat-send-btn {
+        width: 100%;
+        justify-content: center;
+    }
+      .suggestion-buttons {
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .suggestion-btn {
+        font-size: 0.8rem;
+        padding: 8px 14px;
+        width: 100%;
+        max-width: 250px;
+        justify-content: center;
+    }
+}
+
+/* Mode sombre */
+[data-theme="dark"] .chat-input {
+    background: rgba(51, 65, 85, 0.3);
+    border-color: #475569;
+}
+
+[data-theme="dark"] .chat-input:focus {
+    background: rgba(51, 65, 85, 0.5);
+}
+
+[data-theme="dark"] .message-text {
+    background: rgba(51, 65, 85, 0.3);
+    border-color: #475569;
+}
+
+[data-theme="dark"] .typing-indicator {
+    background: rgba(51, 65, 85, 0.2);
+    border-color: #475569;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatForm = document.getElementById('chatForm');
+    const messageInput = document.getElementById('messageInput');
+    const chatMessages = document.getElementById('chatMessages');
+    const sendBtn = document.getElementById('sendBtn');
+    const typingIndicator = document.getElementById('typingIndicator');
+    
+    // Afficher l'heure de bienvenue
+    const welcomeTime = document.getElementById('welcomeTime');
+    welcomeTime.textContent = new Date().toLocaleTimeString('fr-FR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+      // Gérer l'envoi des messages
+    chatForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const message = messageInput.value.trim();
+        if (!message) return;
+        
+        const generateImage = document.getElementById('generateImage').checked;
+        
+        // Ajouter le message utilisateur
+        addMessage(message, 'user');
+        messageInput.value = '';
+        
+        // Désactiver le bouton d'envoi
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = generateImage ? 
+            '<i class="fas fa-spinner fa-spin"></i> <span class="btn-text">Génération...</span>' :
+            '<i class="fas fa-spinner fa-spin"></i> <span class="btn-text">Envoi...</span>';
+        
+        // Afficher l'indicateur de frappe
+        typingIndicator.style.display = 'flex';
+        const typingText = document.querySelector('.typing-text');
+        typingText.textContent = generateImage ? 
+            'ChatGPT génère une réponse et une image...' : 
+            'ChatGPT est en train d\'écrire...';
+        
+        try {
+            // Envoyer la requête à Django
+            const response = await fetch('{% url "chatgpt_api" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    'message': message,
+                    'generate_image': generateImage
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.image_url) {
+                    addMessageWithImage(data.response, data.image_url, 'bot');
+                } else {
+                    addMessage(data.response, 'bot');
+                }
+            } else {
+                addMessage('Désolé, une erreur s\'est produite. Veuillez réessayer.', 'bot');
+            }
+            
+        } catch (error) {
+            console.error('Erreur:', error);
+            addMessage('Erreur de connexion. Veuillez vérifier votre connexion internet.', 'bot');
+        }
+        
+        // Réactiver le bouton
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> <span class="btn-text">Envoyer</span>';
+        typingIndicator.style.display = 'none';
+    });
+    
+    // Suggestions rapides
+    document.querySelectorAll('.suggestion-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            messageInput.value = this.dataset.message;
+            messageInput.focus();
+        });
+    });
+    
+    // Gérer Enter pour envoyer
+    messageInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            chatForm.dispatchEvent(new Event('submit'));
+        }
+    });
+      // Fonction pour ajouter un message
+    function addMessage(text, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}-message`;
+        
+        const currentTime = new Date().toLocaleTimeString('fr-FR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        
+        messageDiv.innerHTML = `
+            <div class="message-avatar">
+                <i class="fas fa-${type === 'user' ? 'user' : 'robot'}"></i>
+            </div>
+            <div class="message-content">
+                <div class="message-text">${text}</div>
+                <div class="message-time">${currentTime}</div>
+            </div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Fonction pour ajouter un message avec image
+    function addMessageWithImage(text, imageUrl, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}-message`;
+        
+        const currentTime = new Date().toLocaleTimeString('fr-FR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        
+        messageDiv.innerHTML = `
+            <div class="message-avatar">
+                <i class="fas fa-${type === 'user' ? 'user' : 'robot'}"></i>
+            </div>
+            <div class="message-content">
+                <div class="message-text">${text}</div>
+                <div class="message-image">
+                    <img src="${imageUrl}" alt="Image générée par DALL-E" class="generated-image" loading="lazy">
+                    <div class="image-overlay">
+                        <button class="btn btn-sm btn-outline-light download-btn" onclick="downloadImage('${imageUrl}')">
+                            <i class="fas fa-download"></i> Télécharger
+                        </button>
+                    </div>
+                </div>
+                <div class="message-time">${currentTime}</div>
+            </div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Fonction pour télécharger l'image
+    window.downloadImage = function(imageUrl) {
+        const link = document.createElement('a');
+        link.href = imageUrl;
+        link.download = `dalle-image-${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+});
+</script>
+{% endblock %}
