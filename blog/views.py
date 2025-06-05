@@ -639,7 +639,7 @@ def generate_article_ai(request):
                    request.user.username, user_prompt[:100])
         
         # Configuration de l'API OpenAI
-        api_key = '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'
+        api_key = ''
         
         # Headers pour l'API
         headers = {
@@ -863,7 +863,7 @@ def chatgpt_api(request):
                    request.user.username, user_message[:100], generate_image)
         
         # Configuration de l'API OpenAI
-        api_key = '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'
+        api_key = ''
         
         # Headers pour l'API
         headers = {
